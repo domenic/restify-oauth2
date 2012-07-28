@@ -40,15 +40,17 @@ module.exports = function createOauth2Plugin(options) {
 
             req.pause();
             options.authenticateToken(token, req, function (error, username) {
+                req.resume();
+
                 if (error) {
                     if (error.statusCode === 401) {
                         setUnauthorizedHeaders(res);
                     }
+
                     return next(error);
                 }
 
                 req.username = username;
-                req.resume();
                 next();
             });
         } else {
