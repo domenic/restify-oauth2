@@ -11,10 +11,13 @@
     "bugs": {
         "url": "http://github.com/domenic/restify-oauth2/issues"
     },
-    "main": "restify-oauth2.js",
+    "main": "lib/createOAuth2Plugin.js",
+    "directories": {
+        "lib": "lib"
+    },
     "scripts": {
         "test": "mocha",
-        "lint": "jshint restify-oauth2.js --show-non-errors"
+        "lint": "jshint lib --show-non-errors"
     },
     "dependencies": {
         "underscore": ">= 1.3.3",
