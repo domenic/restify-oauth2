@@ -3,8 +3,9 @@
 var _ = require("underscore");
 var restify = require("restify");
 
-function hasBearerToken(req) {
-    return req.authorization && req.authorization.scheme === "Bearer";
+function getBearerToken(req) {
+    return req.authorization && req.authorization.scheme === "Bearer" && req.authorization.credentials.length > 0 ?
+        req.authorization.credentials : null;
 }
 
 module.exports = function createOauth2Plugin(options) {
@@ -23,22 +24,18 @@ module.exports = function createOauth2Plugin(options) {
         res.header("Link", "<" + options.tokenEndpoint + ">; rel=\"oauth2-token\"");
     }
 
-    function sendUnauthorizedError(res, message) {
+    function sendTokenRequiredError(res) {
         setUnauthorizedHeaders(res);
-        res.send(new restify.UnauthorizedError(message));
+        res.send(new restify.UnauthorizedError("Bearer token required. Follow the oauth2-token link to get one!"));
     }
 
     return function oauth2Plugin(req, res, next) {
         if (req.method === "POST" && req.path === options.tokenEndpoint) {
             // TODO grant token
         } else if (options.authenticatedRequestPredicate(req)) {
-            if (!hasBearerToken(req)) {
-                return sendUnauthorizedError(res, "Bearer token required. Follow the oauth2-token link to get one!");
-            }
-
-            var token = req.authorization.credentials;
+            var token = getBearerToken(req);
             if (!token) {
-                return sendUnauthorizedError(res, "Bearer token is missing.");
+                return sendTokenRequiredError(res);
             }
 
             req.pause();
