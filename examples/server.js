@@ -21,8 +21,7 @@ var RESOURCES = Object.freeze({
     INITIAL: "/",
     TOKEN: "/token",
     PUBLIC: "/public",
-    SECRET: "/secret",
-    SUPER_SECRET: "/secret/super-secret"
+    SECRET: "/secret"
 });
 
 var oauth2Plugin = restifyOAuth2({
@@ -45,14 +44,6 @@ server.use(restify.bodyParser({ mapParams: false }));
 server.use(oauth2Plugin);
 
 
-function userCanAccess(username, path) {
-    // Only Cthon98 gets access to /secret/super-secret.
-    if (path === RESOURCES.SUPER_SECRET && username !== "Cthon98") {
-        return false;
-    }
-
-    return true;
-}
 
 server.get(RESOURCES.INITIAL, function (req, res, next) {
     var response = {
@@ -84,29 +75,11 @@ server.get(RESOURCES.SECRET, function (req, res, next) {
     var response = {
         "anyone with a token": "has access to this",
         _links: {
-            self: { href: RESOURCES.SECRET }
+            self: { href: RESOURCES.SECRET },
+            parent: { href: RESOURCES.INITIAL }
         }
     };
 
-    if (userCanAccess(req.username, RESOURCES.SUPER_SECRET)) {
-        response._links["http://rel.example.com/super-secret"] = { href: RESOURCES.SUPER_SECRET };
-    }
-
     res.contentType = "application/hal+json";
     res.send(response);
-});
-
-server.get(RESOURCES.SUPER_SECRET, function (req, res, next) {
-    if (!userCanAccess(req.username, req.path)) {
-        return next(new restify.ForbiddenError("You're not cool enough to access the super-secret resource!"));
-    }
-
-    res.contentType = "application/hal+json";
-    res.send({
-        "only special people": "have access to this",
-        _links: {
-            self: { href: RESOURCES.SUPER_SECRET },
-            parent: { href: RESOURCES.SECRET }
-        }
-    });
 });
