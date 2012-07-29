@@ -1,6 +1,7 @@
 "use strict"
 
 sinon = require("sinon")
+should = require("chai").should()
 Assertion = require("chai").Assertion
 restify = require("restify")
 restifyOAuth2 = require("..")
@@ -80,7 +81,7 @@ runTestsForBearerTokenCase = ->
                 @res.header.should.not.have.been.called
 
 beforeEach ->
-    @req = { pause: sinon.spy(), resume: sinon.spy() }
+    @req = { pause: sinon.spy(), resume: sinon.spy(), username: "anonymous" }
     @res = { header: sinon.spy(), send: sinon.spy() }
     @next = sinon.spy((x) => if x? then @res.send(x))
 
@@ -321,9 +322,10 @@ describe "For requests to resources that do not require a token", ->
     beforeEach -> @req.path = "/public"
 
     describe "without a bearer token in the header", ->
-        it "should simply call `next`", ->
+        it "should remove `req.username`, and simply call `next`", ->
             @doIt()
 
+            should.not.exist(@req.username)
             @next.should.have.been.calledWithExactly()
 
     runTestsForBearerTokenCase()
