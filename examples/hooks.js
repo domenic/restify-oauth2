@@ -20,7 +20,7 @@ exports.validateClient = function (clientId, clientSecret, cb) {
 };
 
 exports.grantToken = function (username, password, cb) {
-    if ((username === "AzureDiamond" && password === "hunter2")) ||
+    if ((username === "AzureDiamond" && password === "hunter2") ||
         (username === "Cthon98" && password === "*********")) {
         // If the user authenticates, generate a token for them and store it so `exports.authenticateToken` below
         // can look it up later.
