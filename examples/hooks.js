@@ -49,12 +49,3 @@ exports.authenticateToken = function (token, cb) {
     // Calling back with an error would be reserved for internal server error situations.
     cb(null, false);
 };
-
-exports.userCanAccess = function (username, path) {
-    // Only Cthon98 gets access to /secret/super-secret; AzureDiamond doesn't.
-    if (path === "/secret/super-secret" && username !== "Cthon98") {
-        return false;
-    }
-
-    return true;
-}

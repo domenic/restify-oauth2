@@ -1,6 +1,8 @@
+"use strict";
+
 var restify = require("restify");
-var restifyOauth2 = require("..");
-var backend = require("./fakeBackend");
+var restifyOAuth2 = require("..");
+var hooks = require("./hooks");
 
 // NB: we're using [HAL](http://stateless.co/hal_specification.html) here to communicate RESTful links among our
 // resources, but you could use any JSON linking format, or XML, or even just Link headers.
@@ -23,24 +25,34 @@ var RESOURCES = Object.freeze({
     SUPER_SECRET: "/secret/super-secret"
 });
 
-var oauth2Plugin = restifyOauth2({
+var oauth2Plugin = restifyOAuth2({
     tokenEndpoint: RESOURCES.TOKEN,
     // Checks that this API client is authorized to use your API, and has the correct secret
-    validateClient: backend.validateClient,
+    validateClient: hooks.validateClient,
     // Checks that the API client is authenticating on behalf of a real user with correct credentials, and if so,
     // gives a token for that user
-    grantToken: backend.grantToken,
+    grantToken: hooks.grantToken,
     // Checks that an incoming token is valid, and if so, maps it to a username
-    authenticateToken: backend.authenticateToken,
-    // Checks that we need to perform authentication on a given request
+    authenticateToken: hooks.authenticateToken,
+    // Checks that a given request requires an access token or not.
     requiresTokenPredicate: function (req) {
-        return req.path !== "/public";
+        return req.path !== "/public" && req.path !== "/";
     }
 });
 
 server.use(restify.authorizationParser());
 server.use(restify.bodyParser({ mapParams: false }));
 server.use(oauth2Plugin);
+
+
+function userCanAccess(username, path) {
+    // Only Cthon98 gets access to /secret/super-secret.
+    if (path === RESOURCES.SUPER_SECRET && username !== "Cthon98") {
+        return false;
+    }
+
+    return true;
+}
 
 server.get(RESOURCES.INITIAL, function (req, res, next) {
     var response = {
@@ -76,7 +88,7 @@ server.get(RESOURCES.SECRET, function (req, res, next) {
         }
     };
 
-    if (backend.userCanAccess(req.username, RESOURCES.SUPER_SECRET)) {
+    if (userCanAccess(req.username, RESOURCES.SUPER_SECRET)) {
         response._links["http://rel.example.com/super-secret"] = { href: RESOURCES.SUPER_SECRET };
     }
 
@@ -85,7 +97,7 @@ server.get(RESOURCES.SECRET, function (req, res, next) {
 });
 
 server.get(RESOURCES.SUPER_SECRET, function (req, res, next) {
-    if (!backend.userCanAccess(req.username, RESOURCES.SUPER_SECRET)) {
+    if (!userCanAccess(req.username, req.path)) {
         return next(new restify.ForbiddenError("You're not cool enough to access the super-secret resource!"));
     }
 
