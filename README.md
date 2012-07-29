@@ -38,11 +38,11 @@ server.use(restifyOauth2(options));
 To hook Restify-OAuth2 up to your infrastructure, you will need to provide it with the following hooks in the `options`
 hash:
 
-* `validateClient(clientId, clientSecret, cb)`: checks that the API client is valid.
+* `validateClient(clientId, clientSecret, cb)`: should check that the API client is valid.
 * `grantToken(username, password, cb)`: given a username and password for the user the client is connecting on behalf
-  of, generates and stores a token for that user if they authenticate.
-* `authenticateToken(token, cb)`: given a token, checks to make sure it has been granted, and if so translates it to a
-  username.
+  of, should check that the user authenticates, and if so, generate and store a token for them.
+* `authenticateToken(token, cb)`: given a token, should check to make sure it has been granted, and if so translated it
+  to a username.
 
 Basically, if you can provide those, you get the OAuth2 implementation for free. Here are some [example hooks][].
 
