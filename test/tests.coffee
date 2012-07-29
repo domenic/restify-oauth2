@@ -259,6 +259,15 @@ describe "For requests to authenticated resources", ->
                 @req.should.have.property("username", @username)
                 @next.should.have.been.calledWithExactly()
 
+        describe "when the `authenticateToken` calls back with `false`", ->
+            beforeEach -> @authenticateToken.yields(null, false)
+
+            it "should resume the request and send a 401 response, along with WWW-Authenticate and Link headers", ->
+                @doIt()
+
+                @req.resume.should.have.been.called
+                @res.should.be.unauthorized("Bearer token invalid.")
+
         describe "when the `authenticateToken` calls back with a 401 error", ->
             beforeEach ->
                 @errorMessage = "The authentication failed for some reason."
