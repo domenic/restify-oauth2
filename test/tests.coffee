@@ -47,6 +47,14 @@ beforeEach ->
 
     @doIt = => @plugin(@req, @res, @next)
 
+describe "For public requests", ->
+    beforeEach -> @req.path = "/public"
+
+    it "should simply call `next`", ->
+        @doIt()
+
+        @next.should.have.been.calledWithExactly()
+
 describe "For POST requests to the token endpoint", ->
     beforeEach ->
         @req.method = "POST"
@@ -80,7 +88,7 @@ describe "For POST requests to the token endpoint", ->
 
                             @validateClient.should.have.been.calledWith(@clientId, @clientSecret)
 
-                        describe "when `validateClient` callback calls back with `false`", ->
+                        describe "when `validateClient` calls back with `false`", ->
                             beforeEach -> @validateClient.yields(null, false)
 
                             it "should send a 401 response with error_type=invalid_client and a WWW-Authenticate " +
@@ -94,7 +102,7 @@ describe "For POST requests to the token endpoint", ->
                                 @res.should.be.an.oauthError("Unauthorized", "invalid_client",
                                                              "Client ID and secret did not validate.")
 
-                        describe "when `validateClient` callback gives an error", ->
+                        describe "when `validateClient` calls back with an error", ->
                             beforeEach ->
                                 @error = new Error("Bad things happened, internally.")
                                 @validateClient.yields(@error)
@@ -170,14 +178,6 @@ describe "For POST requests to the token endpoint", ->
 
             @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
 
-describe "For public requests", ->
-    beforeEach -> @req.path = "/public"
-
-    it "should simply call `next`", ->
-        @doIt()
-
-        @next.should.have.been.calledWithExactly()
-
 describe "For requests to authenticated resources", ->
     beforeEach -> @req.path = "/private"
 
@@ -192,7 +192,7 @@ describe "For requests to authenticated resources", ->
             @req.pause.should.have.been.called
             @authenticateToken.should.have.been.calledWith(@token, @req)
 
-        describe "when the `authenticateToken` callback gives a username", ->
+        describe "when the `authenticateToken` calls back with a username", ->
             beforeEach ->
                 @username = "user123"
                 @authenticateToken.yields(null, @username)
@@ -204,7 +204,7 @@ describe "For requests to authenticated resources", ->
                 @req.should.have.property("username", @username)
                 @next.should.have.been.calledWithExactly()
 
-        describe "when the `authenticateToken` callback gives a 401 error", ->
+        describe "when the `authenticateToken` calls back with a 401 error", ->
             beforeEach ->
                 @errorMessage = "The authentication failed for some reason."
                 @authenticateToken.yields(new restify.UnauthorizedError(@errorMessage))
@@ -215,7 +215,7 @@ describe "For requests to authenticated resources", ->
                 @req.resume.should.have.been.called
                 @res.should.be.unauthorized(@errorMessage)
 
-        describe "when the `authenticateToken` callback gives a non-401 error", ->
+        describe "when the `authenticateToken` calls back with a non-401 error", ->
             beforeEach ->
                 @error = new restify.ForbiddenError("The authentication succeeded but this resource is forbidden.")
                 @authenticateToken.yields(@error)
