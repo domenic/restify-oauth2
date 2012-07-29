@@ -7,6 +7,7 @@ restifyOAuth2 = require("..")
 
 tokenEndpoint = "/token-uri"
 wwwAuthenticateRealm = "Realm string"
+tokenExpirationTime = 12345
 
 Assertion.addMethod("unauthorized", (message) ->
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", "Bearer realm=\"#{wwwAuthenticateRealm}\"")
@@ -38,6 +39,7 @@ beforeEach ->
     options = {
         tokenEndpoint
         wwwAuthenticateRealm
+        tokenExpirationTime
         @authenticateToken
         @validateClient
         @grantToken
@@ -88,6 +90,56 @@ describe "For POST requests to the token endpoint", ->
 
                             @validateClient.should.have.been.calledWith(@clientId, @clientSecret)
 
+                        describe "when `validateClient` calls back with `true`", ->
+                            beforeEach -> @validateClient.yields(null, true)
+
+                            it "should use the username and password body fields to grant a token", ->
+                                @doIt()
+
+                                @grantToken.should.have.been.calledWith(@username, @password)
+
+                            describe "when `grantToken` calls back with a token", ->
+                                beforeEach ->
+                                    @token = "token123"
+                                    @grantToken.yields(null, @token)
+
+                                it "should send a response with access_token, token_type, and expires_in set", ->
+                                    @doIt()
+
+                                    @res.send.should.have.been.calledWith(
+                                        access_token: @token,
+                                        token_type: "Bearer"
+                                        expires_in: tokenExpirationTime
+                                    )
+
+                            describe "when `grantToken` calls back with `false`", ->
+                                beforeEach -> @grantToken.yields(null, false)
+
+                                it "should send a 401 response with error_type=invalid_client", ->
+                                    @doIt()
+
+                                    @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                                                                 "Username and password did not authenticate.")
+
+                            describe "when `grantToken` calls back with `null`", ->
+                                beforeEach -> @grantToken.yields(null, null)
+
+                                it "should send a 401 response with error_type=invalid_client", ->
+                                    @doIt()
+
+                                    @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                                                                 "Username and password did not authenticate.")
+
+                            describe "when `grantToken` calls back with an error", ->
+                                beforeEach ->
+                                    @error = new Error("Bad things happened, internally.")
+                                    @grantToken.yields(@error)
+
+                                it "should call `next` with that error", ->
+                                    @doIt()
+
+                                    @next.should.have.been.calledWithExactly(@error)
+
                         describe "when `validateClient` calls back with `false`", ->
                             beforeEach -> @validateClient.yields(null, false)
 
@@ -133,8 +185,9 @@ describe "For POST requests to the token endpoint", ->
                             @res.should.be.an.oauthError("BadRequest", "invalid_request",
                                                          "Must include a basic access authentication header.")
 
-
                 describe "that has no password field", ->
+                    beforeEach -> @req.body.password = null
+
                     it "should send a 400 response with error_type=invalid_request", ->
                         @doIt()
 
@@ -142,6 +195,8 @@ describe "For POST requests to the token endpoint", ->
                                                      "Must specify password field.")
 
             describe "that has no username field", ->
+                beforeEach -> @req.body.username = null
+
                 it "should send a 400 response with error_type=invalid_request", ->
                     @doIt()
 
