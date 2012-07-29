@@ -33,7 +33,7 @@ runTestsForBearerTokenCase = ->
             @doIt()
 
             @req.pause.should.have.been.called
-            @authenticateToken.should.have.been.calledWith(@token, @req)
+            @authenticateToken.should.have.been.calledWith(@token)
 
         describe "when the `authenticateToken` calls back with a username", ->
             beforeEach ->
