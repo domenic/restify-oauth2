@@ -13,14 +13,15 @@ TODO: Explain the hooks first, rename this section.
 If you provide this plugin with the appropriate hooks, it will:
 
 * Set up a [token endpoint][], which returns [access token responses][token-endpoint-success] or
-  [correctly-formatted error responses][token-endpoint-error]. It will accept either
-  `"application/x-www-form-urlencoded"` as specified, or `"application/json"` as described in some RFC I can't find
-  anymore. Client validation and access token generation is left up to your hooks.
-* Protect all other resources that you specify, verifying that a bearer token is sent and that it passes your
-  authentication hook.
-  * If it does, the request object will get the `username` property returned from your authentication hook.
-  * Otherwise, a 401 error will be sent with an appropriate `"WWW-Authenticate"` header as well as a
-    [`"Link"` header][web-linking] with [`rel="oauth2-token"`][oauth2-token-rel] pointing to the token endpoint.
+  [correctly-formatted error responses][token-endpoint-error].
+* For all other resources, when an access token is sent, it will validate it:
+  * If the token fails validation, it will send an appropriate 401 error response, with a `"WWW-Authenticate"` header
+    and a [`"Link"`][web-linking] [`rel="oauth2-token"`][oauth2-token-rel] header pointing to the token endpoint.
+  * Otherwise, it will set `req.username` to the username corresponding to that access token.
+* If no access token is sent, it simply sets `req.username` to `null`:
+  * You can check for this whenever there is a resource you want to protect.
+  * If the user tries to access a protected resource, you can use Restify-OAuth2's `res.sendUnauthorized()` to send
+    appropriate 401 errors with `"WWW-Authenticate"` and `"Link"` headers as above.
 
 ## Use and Configuration
 
@@ -34,13 +35,9 @@ var restifyOAuth2 = require("restify-oauth2");
 
 var server = restify.createServer({ name: "My cool server", version: "1.0.0" });
 server.use(restify.authorizationParser());
-server.use(restify.bodyParser({ mapParams: false }));
+server.use(restify.bodyParser());
 server.use(restifyOAuth2(options));
 ```
-
-TODO explain how to check `req.username` or similar.
-
-Maybe restructure to add a separate plugin (e.g. `restifyOAuth2.denyAccess(requiresTokenPredicate)`) for that aspect?
 
 ### Hooks
 
@@ -65,9 +62,6 @@ The hooks above are the only required options, but the following are also availa
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself.
   Defaults to `Infinity` (which results in no value being sent in the response).
-* `requiresTokenPredicate`: a function which takes a request object, and returns whether it requires a token to access.
-  This can be used to create public resources that can be accessed without a token. Defaults to a function that returns
-  `true` for all requests except those to the root (initial) resource.
 
 ## What Does That Look Like?
 
