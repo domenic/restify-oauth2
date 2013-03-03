@@ -16,7 +16,9 @@
         "lib": "lib"
     },
     "scripts": {
-        "test": "mocha",
+        "test": "npm run test-unit && npm run test-integration",
+        "test-unit": "mocha test/tests.coffee",
+        "test-integration": "vows test/integration.coffee",
         "lint": "jshint lib && jshint examples"
     },
     "dependencies": {
@@ -26,12 +28,14 @@
         "restify": "2.x"
     },
     "devDependencies": {
+        "api-easy": ">= 0.3.7",
         "coffee-script": ">= 1.5.0",
         "chai": ">= 1.5.0",
         "jshint": ">= 1.0.0",
         "mocha": ">= 1.8.1",
         "restify": ">= 2.3.2",
         "sinon": ">= 1.6.0",
-        "sinon-chai": ">= 2.3.1"
+        "sinon-chai": ">= 2.3.1",
+        "vows": ">= 0.7.0"
     }
 }
