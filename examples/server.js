@@ -45,7 +45,7 @@ server.use(oauth2Plugin);
 
 
 
-server.get(RESOURCES.INITIAL, function (req, res, next) {
+server.get(RESOURCES.INITIAL, function (req, res) {
     var response = {
         _links: {
             self: { href: RESOURCES.INITIAL },
@@ -63,7 +63,7 @@ server.get(RESOURCES.INITIAL, function (req, res, next) {
     res.send(response);
 });
 
-server.get(RESOURCES.PUBLIC, function (req, res, next) {
+server.get(RESOURCES.PUBLIC, function (req, res) {
     res.send({
         "public resource": "is public",
         "it's not even": "a linked HAL resource",
@@ -71,7 +71,7 @@ server.get(RESOURCES.PUBLIC, function (req, res, next) {
     });
 });
 
-server.get(RESOURCES.SECRET, function (req, res, next) {
+server.get(RESOURCES.SECRET, function (req, res) {
     var response = {
         "anyone with a token": "has access to this",
         _links: {
