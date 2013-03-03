@@ -1,7 +1,7 @@
-# An OAuth 2 Endpoint Plugin for Restify
+# OAuth 2 Endpoints for Restify
 
-This package provides a *very simple* plugin for the [Restify][] framework, giving your RESTful server OAuth 2.0
-endpoint capabilities. In particular, it implements the [Resource Owner Password Credentials flow][ropc] only.
+This package provides a *very simple* OAuth 2.0 endpoint for the [Restify][] framework. In particular, it implements the
+[Resource Owner Password Credentials flow][ropc] only.
 
 The idea behind this OAuth 2 flow is that your API clients will prompt the user for their username and password, and
 send those to your API in exchange for an access token. This has some advantages over simply sending the user's
@@ -11,7 +11,7 @@ have at least one-time access to the user's credentials.
 
 ## What You Get
 
-If you provide this plugin with the appropriate hooks, it will:
+If you provide Restify–OAuth2 with the appropriate hooks, it will:
 
 * Set up a [token endpoint][], which returns [access token responses][token-endpoint-success] or
   [correctly-formatted error responses][token-endpoint-error].
@@ -27,9 +27,9 @@ If you provide this plugin with the appropriate hooks, it will:
 
 ## Use and Configuration
 
-To use Restify–OAuth2, you'll need to instantiate a new instance of the plugin and call `server.use` on your Restify
-server. Restify–OAuth2 also depends on the built-in `authorizationParser` and `bodyParser` plugins. So in short, it
-looks like this:
+To use Restify–OAuth2, you'll need to pass it your server plus some options, including the hooks discussed below.
+Restify–OAuth2 also depends on the built-in `authorizationParser` and `bodyParser` plugins, the latter with `mapParams`
+set to `false`. So in short, it looks like this:
 
 ```js
 var restify = require("restify");
@@ -37,9 +37,12 @@ var restifyOAuth2 = require("restify-oauth2");
 
 var server = restify.createServer({ name: "My cool server", version: "1.0.0" });
 server.use(restify.authorizationParser());
-server.use(restify.bodyParser());
-server.use(restifyOAuth2(options));
+server.use(restify.bodyParser({ mapParams: false }));
+restifyOAuth2(server, options);
 ```
+
+Unfortunately, Restify–OAuth2 can't be a simple Restify plugin. It needs to install a route for the token
+endpoint, whereas plugins simply run on every request and don't modify the server's routing table.
 
 ### Hooks
 

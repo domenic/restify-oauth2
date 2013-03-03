@@ -25,9 +25,13 @@ Assertion.addMethod("oauthError", (errorClass, errorType, errorDescription) ->
 )
 
 beforeEach ->
-    @req = { pause: sinon.spy(), resume: sinon.spy(), username: "anonymous" }
+    @req = { pause: sinon.spy(), resume: sinon.spy(), username: "anonymous", authorization: {} }
     @res = { header: sinon.spy(), send: sinon.spy() }
     @next = sinon.spy((x) => if x? then @res.send(x))
+
+    @server =
+        post: sinon.spy((path, handler) => @postToTokenEndpoint = => handler(@req, @res, @next))
+        use: (plugin) => plugin(@req, @res, @next)
 
     @authenticateToken = sinon.stub()
     @validateClient = sinon.stub()
@@ -43,14 +47,23 @@ beforeEach ->
             @grantToken
         }
     }
-    @plugin = restifyOAuth2(options)
 
-    @doIt = => @plugin(@req, @res, @next)
+    @doIt = => restifyOAuth2(@server, options)
+
+it "should set up the token endpoint", ->
+    @doIt()
+
+    @server.post.should.have.been.calledWith(tokenEndpoint)
 
 describe "For POST requests to the token endpoint", ->
     beforeEach ->
         @req.method = "POST"
-        @req.path = tokenEndpoint
+        @req.path = => tokenEndpoint
+
+        baseDoIt = @doIt
+        @doIt = =>
+            baseDoIt()
+            @postToTokenEndpoint()
 
     describe "with a body", ->
         beforeEach -> @req.body = {}
@@ -155,8 +168,6 @@ describe "For POST requests to the token endpoint", ->
                                 @next.should.have.been.calledWithExactly(@error)
 
                     describe "without an authorization header", ->
-                        beforeEach -> @req.authorization = null
-
                         it "should send a 400 response with error_type=invalid_request", ->
                             @doIt()
 
@@ -224,7 +235,7 @@ describe "For POST requests to the token endpoint", ->
             @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
 
 describe "For other requests", ->
-    beforeEach -> @req.path = "/other-resource"
+    beforeEach -> @req.path = => "/other-resource"
 
     describe "with an authorization header that contains a valid bearer token", ->
         beforeEach ->
@@ -282,7 +293,7 @@ describe "For other requests", ->
                 @res.header.should.not.have.been.called
 
     describe "without an authorization header", ->
-        beforeEach -> @req.authorization = null
+        beforeEach -> @req.authorization = {}
 
         it "should remove `req.username`, and simply call `next`", ->
             @doIt()

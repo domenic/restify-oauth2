@@ -11,7 +11,7 @@
     "bugs": {
         "url": "http://github.com/domenic/restify-oauth2/issues"
     },
-    "main": "lib/createOAuth2Plugin.js",
+    "main": "lib/index.js",
     "directories": {
         "lib": "lib"
     },
