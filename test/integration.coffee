@@ -12,7 +12,7 @@ basicAuth = (new Buffer("#{clientKey}:#{clientSecret}")).toString("base64")
 # State modified by some tests, and then used by later ones
 accessToken = null
 
-suite = apiEasy.describe("Get a token")
+suite = apiEasy.describe("Restify–OAuth2 Example Server")
 
 suite.before "Set token if available", (outgoing) ->
     if accessToken
