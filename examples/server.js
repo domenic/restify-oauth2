@@ -24,20 +24,9 @@ var RESOURCES = Object.freeze({
     SECRET: "/secret"
 });
 
-var oauth2Plugin = restifyOAuth2({
-    tokenEndpoint: RESOURCES.TOKEN,
-    // Checks that this API client is authorized to use your API, and has the correct secret
-    validateClient: hooks.validateClient,
-    // Checks that the API client is authenticating on behalf of a real user with correct credentials, and if so,
-    // gives a token for that user
-    grantToken: hooks.grantToken,
-    // Checks that an incoming token is valid, and if so, maps it to a username
-    authenticateToken: hooks.authenticateToken
-});
-
 server.use(restify.authorizationParser());
 server.use(restify.bodyParser());
-server.use(oauth2Plugin);
+server.use(restifyOAuth2({ tokenEndpoint: RESOURCES.TOKEN, hooks: hooks }));
 
 
 

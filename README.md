@@ -8,8 +8,6 @@ GREAT IDEA!
 
 ## What You Get
 
-TODO: Explain the hooks first, rename this section.
-
 If you provide this plugin with the appropriate hooks, it will:
 
 * Set up a [token endpoint][], which returns [access token responses][token-endpoint-success] or
@@ -41,27 +39,39 @@ server.use(restifyOAuth2(options));
 
 ### Hooks
 
-To hook Restify-OAuth2 up to your infrastructure, you will need to provide it with the following hooks in the `options`
-hash:
+To hook Restify-OAuth2 up to your infrastructure, you will need to provide it with the following hooks in the
+`options.hooks` hash. Basically, if you can provide these, you get the OAuth2 implementation for free.
 
-* `validateClient(clientId, clientSecret, cb)`: should check that the API client is valid.
-* `grantToken(username, password, cb)`: given a username and password for the user the client is connecting on behalf
-  of, should check that the user authenticates, and if so, generate and store a token for them.
-* `authenticateToken(token, cb)`: given a token, should check to make sure it has been granted, and if so translated it
-  to a username.
+The demo application contains some [example hooks][].
 
-Basically, if you can provide those, you get the OAuth2 implementation for free. Here are some [example hooks][].
+#### `validateClient(clientId, clientSecret, cb)`
+
+Checks that the API client is authorized to use your API, and has the correct secret. It should call back with `true` or
+`false` depending on the result of the check. It can also call back with an error if there was some internal server
+error while doing the check.
+
+#### `grantToken(username, password, cb)`
+
+Checks that the API client is authenticating on behalf of a real user with correct credentials. It should call back with
+a new token for that user if so, or `false` if the credentials are incorrect. It can also call back with an error if
+there was some internal server error while validating the credentials.
+
+#### `authenticateToken(token, cb)`
+
+Checks that a token is valid, i.e. that it was granted in the past by `grantToken`. It should call back with the
+username for that token if so, or `false` if the token is invalid. It can also call back with an error if there was some
+internal server error while looking up the token.
 
 ### Other Options
 
-The hooks above are the only required options, but the following are also available for tweaking:
+The `hooks` hash is the only required option, but the following are also available for tweaking:
 
 * `tokenEndpoint`: the location at which the token endpoint should be created. Defaults to `"/token"`.
 * `wwwAuthenticateRealm`: the value of the "Realm" challenge in the [`"WWW-Authenticate"`][www-authenticate] header.
   Defaults to `"Who goes there?"`.
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
-  Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself.
-  Defaults to `Infinity` (which results in no value being sent in the response).
+  Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
+  calling back with `false` from `authenticateToken` when the token expires. Defaults to `Infinity`.
 
 ## What Does That Look Like?
 

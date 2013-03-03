@@ -37,9 +37,11 @@ beforeEach ->
         tokenEndpoint
         wwwAuthenticateRealm
         tokenExpirationTime
-        @authenticateToken
-        @validateClient
-        @grantToken
+        hooks: {
+            @authenticateToken
+            @validateClient
+            @grantToken
+        }
     }
     @plugin = restifyOAuth2(options)
 
