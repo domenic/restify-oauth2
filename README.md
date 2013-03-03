@@ -13,13 +13,14 @@ If you provide this plugin with the appropriate hooks, it will:
 * Set up a [token endpoint][], which returns [access token responses][token-endpoint-success] or
   [correctly-formatted error responses][token-endpoint-error].
 * For all other resources, when an access token is sent, it will validate it:
-  * If the token fails validation, it will send an appropriate 401 error response, with a `"WWW-Authenticate"` header
-    and a [`"Link"`][web-linking] [`rel="oauth2-token"`][oauth2-token-rel] header pointing to the token endpoint.
+  * If the token fails validation, it will send an appropriate 401 error response, with a
+    [`WWW-Authenticate`][www-authenticate] header and a [`Link`][web-linking] [`rel="oauth2-token"`][oauth2-token-rel]
+    header pointing to the token endpoint.
   * Otherwise, it will set `req.username` to the username corresponding to that access token.
 * If no access token is sent, it simply sets `req.username` to `null`:
   * You can check for this whenever there is a resource you want to protect.
   * If the user tries to access a protected resource, you can use Restify-OAuth2's `res.sendUnauthorized()` to send
-    appropriate 401 errors with `"WWW-Authenticate"` and `"Link"` headers as above.
+    appropriate 401 errors with `WWW-Authenticate` and `Link` headers as above.
 
 ## Use and Configuration
 
@@ -67,7 +68,7 @@ internal server error while looking up the token.
 The `hooks` hash is the only required option, but the following are also available for tweaking:
 
 * `tokenEndpoint`: the location at which the token endpoint should be created. Defaults to `"/token"`.
-* `wwwAuthenticateRealm`: the value of the "Realm" challenge in the [`"WWW-Authenticate"`][www-authenticate] header.
+* `wwwAuthenticateRealm`: the value of the "Realm" challenge in the `WWW-Authenticate` header.
   Defaults to `"Who goes there?"`.
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
@@ -111,7 +112,7 @@ A secret resource that only authenticated users can access.
 
 * If a valid token is supplied, `req.username` is truthy, and the app sends the secret data.
 * If no token is supplied, `req.username` is `null`, so the application uses `res.sendUnauthorized()` to send a nice 401
-  error with `"WWW-Authenticate"` and `"Link"` headers.
+  error with `WWW-Authenticate` and `Link` headers.
 * If an invalid token is supplied, Restify-OAuth2 intercepts the request before it gets to the application, and sends an
   appropriate 401 error.
 
