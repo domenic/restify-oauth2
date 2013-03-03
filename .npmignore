@@ -2,5 +2,6 @@
 /npm-debug.log
 
 /test/
+/examples/
 /.jshintrc
 /.npmignore
