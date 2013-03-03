@@ -1,5 +1,6 @@
 "use strict"
 
+require("chai").use(require("sinon-chai"))
 sinon = require("sinon")
 should = require("chai").should()
 Assertion = require("chai").Assertion
