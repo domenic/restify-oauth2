@@ -3,8 +3,11 @@
 This package provides a *very simple* plugin for the [Restify][] framework, giving your RESTful server OAuth 2.0
 endpoint capabilities. In particular, it implements the [Resource Owner Password Credentials flow][ropc] only.
 
-TODO: yeah we're gonna need to explain ROPC and bearer tokens and shit. Maybe I'll make a blog post and link to that?
-GREAT IDEA!
+The idea behind this OAuth 2 flow is that your API clients will prompt the user for their username and password, and
+send those to your API in exchange for an access token. This has some advantages over simply sending the user's
+credentials to the server directly. For example, it obviates the need for the client to store the credentials, and
+allows expiration and revocation of tokens. However, it does imply that you trust your API clients, since they will
+have at least one-time access to the user's credentials.
 
 ## What You Get
 
