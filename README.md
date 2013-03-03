@@ -96,11 +96,11 @@ you'll see our setup:
 TODO: update example public page to use `req.username` to say "hi, username!" if logged in, or "sign up here!" if not.
 
 [Restify]: http://mcavage.github.com/node-restify/
-[ropc]: http://tools.ietf.org/html/draft-ietf-oauth-v2-30#section-1.3.3
-[token endpoint]: http://tools.ietf.org/html/draft-ietf-oauth-v2-30#section-4.3.2
-[token-endpoint-success]: http://tools.ietf.org/html/draft-ietf-oauth-v2-30#section-5.1
-[token-endpoint-error]: http://tools.ietf.org/html/draft-ietf-oauth-v2-30#section-5.2
-[oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-01#section-4.1.2
+[ropc]: http://tools.ietf.org/html/rfc6749#section-1.3.3
+[token endpoint]: http://tools.ietf.org/html/rfc6749#section-3.2
+[token-endpoint-success]: http://tools.ietf.org/html/rfc6749#section-5.1
+[token-endpoint-error]: http://tools.ietf.org/html/rfc6749#section-5.2
+[oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-07#section-3.2
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
 [example hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/hooks.js
