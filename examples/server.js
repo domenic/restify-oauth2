@@ -36,7 +36,7 @@ var oauth2Plugin = restifyOAuth2({
 });
 
 server.use(restify.authorizationParser());
-server.use(restify.bodyParser({ mapParams: false }));
+server.use(restify.bodyParser());
 server.use(oauth2Plugin);
 
 
@@ -63,7 +63,8 @@ server.get(RESOURCES.PUBLIC, function (req, res) {
     res.send({
         "public resource": "is public",
         "it's not even": "a linked HAL resource",
-        "just plain": "application/json"
+        "just plain": "application/json",
+        "personalized message": req.username ? "hi, " + req.username + "!" : "hello stranger!"
     });
 });
 
@@ -73,7 +74,7 @@ server.get(RESOURCES.SECRET, function (req, res) {
     }
 
     var response = {
-        "anyone with a token": "has access to this",
+        "users with a token": "have access to this secret data",
         _links: {
             self: { href: RESOURCES.SECRET },
             parent: { href: RESOURCES.INITIAL }
