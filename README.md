@@ -3,7 +3,12 @@
 This package provides a *very simple* plugin for the [Restify][] framework, giving your RESTful server OAuth 2.0
 endpoint capabilities. In particular, it implements the [Resource Owner Password Credentials flow][ropc] only.
 
+TODO: yeah we're gonna need to explain ROPC and bearer tokens and shit. Maybe I'll make a blog post and link to that?
+GREAT IDEA!
+
 ## What You Get
+
+TODO: Explain the hooks first, rename this section.
 
 If you provide this plugin with the appropriate hooks, it will:
 
@@ -30,8 +35,12 @@ var restifyOAuth2 = require("restify-oauth2");
 var server = restify.createServer({ name: "My cool server", version: "1.0.0" });
 server.use(restify.authorizationParser());
 server.use(restify.bodyParser({ mapParams: false }));
-server.use(restifyOauth2(options));
+server.use(restifyOAuth2(options));
 ```
+
+TODO explain how to check `req.username` or similar.
+
+Maybe restructure to add a separate plugin (e.g. `restifyOAuth2.denyAccess(requiresTokenPredicate)`) for that aspect?
 
 ### Hooks
 
@@ -84,6 +93,7 @@ you'll see our setup:
     Restify-OAuth2, with `"WWW-Authenticate"` and `"Link"` headers as above.
   * If one is supplied, the application displays the contents of the resource.
 
+TODO: update example public page to use `req.username` to say "hi, username!" if logged in, or "sign up here!" if not.
 
 [Restify]: http://mcavage.github.com/node-restify/
 [ropc]: http://tools.ietf.org/html/draft-ietf-oauth-v2-30#section-1.3.3

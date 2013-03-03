@@ -83,3 +83,5 @@ server.get(RESOURCES.SECRET, function (req, res, next) {
     res.contentType = "application/hal+json";
     res.send(response);
 });
+
+server.listen(8080);
