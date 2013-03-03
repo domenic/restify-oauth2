@@ -310,3 +310,19 @@ describe "For other requests", ->
             @doIt()
 
             @res.should.be.unauthorized("Bearer token required.")
+
+describe "`res.sendUnauthorized`", ->
+    beforeEach -> @doIt()
+
+    describe "with no arguments", ->
+        beforeEach -> @res.sendUnauthorized()
+
+        it "should send a 401 response with WWW-Authenticate and Link headers, plus the default message", ->
+            @res.should.be.unauthorized("Bearer token required.")
+
+    describe "with a message passed", ->
+        message = "You really should go get a bearer token"
+        beforeEach -> @res.sendUnauthorized(message)
+
+        it "should send a 401 response with WWW-Authenticate and Link headers, plus the specified message", ->
+            @res.should.be.unauthorized(message)

@@ -32,11 +32,7 @@ var oauth2Plugin = restifyOAuth2({
     // gives a token for that user
     grantToken: hooks.grantToken,
     // Checks that an incoming token is valid, and if so, maps it to a username
-    authenticateToken: hooks.authenticateToken,
-    // Checks that a given request requires an access token or not.
-    requiresTokenPredicate: function (req) {
-        return req.path !== "/public" && req.path !== "/";
-    }
+    authenticateToken: hooks.authenticateToken
 });
 
 server.use(restify.authorizationParser());
@@ -72,6 +68,10 @@ server.get(RESOURCES.PUBLIC, function (req, res) {
 });
 
 server.get(RESOURCES.SECRET, function (req, res) {
+    if (!req.username) {
+        return res.sendUnauthorized();
+    }
+
     var response = {
         "anyone with a token": "has access to this",
         _links: {
