@@ -3,6 +3,18 @@
 var _ = require("underscore");
 var crypto = require("crypto");
 
+var database = {
+    clients: {
+        officialApiClient: { secret: "C0FFEE" },
+        unofficialClient: { secret: "DECAF" }
+    },
+    users: {
+        AzureDiamond: { password: "hunter2" },
+        Cthon98: { password: "*********" }
+    },
+    tokensToUsernames: {}
+};
+
 function generateToken(data) {
     var random = Math.floor(Math.random() * 100001);
     var timestamp = (new Date()).getTime();
@@ -11,22 +23,22 @@ function generateToken(data) {
     return sha256.update(data).digest("base64");
 }
 
-var tokenToUsernameMap = {};
-
 exports.validateClient = function (clientId, clientSecret, cb) {
     // Call back with `true` to signal that the client is valid, and `false` otherwise.
     // Call back with an error if you encounter an internal server error situation while trying to validate.
-    cb(null, clientId === "legit" && clientSecret === "C0FFEE");
+
+    var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
+    cb(null, isValid);
 };
 
 exports.grantToken = function (username, password, cb) {
-    if ((username === "AzureDiamond" && password === "hunter2") ||
-        (username === "Cthon98" && password === "*********")) {
+    var isValid = _.has(database.users, username) && database.users[username].password === password;
+    if (isValid) {
         // If the user authenticates, generate a token for them and store it so `exports.authenticateToken` below
         // can look it up later.
 
         var token = generateToken(username + ":" + password);
-        tokenToUsernameMap[token] = username;
+        database.tokensToUsernames[token] = username;
 
         // Call back with the token so Restify-OAuth2 can pass it on to the client.
         return cb(null, token);
@@ -38,10 +50,10 @@ exports.grantToken = function (username, password, cb) {
 };
 
 exports.authenticateToken = function (token, cb) {
-    if (_.has(tokenToUsernameMap, token)) {
+    if (_.has(database.tokensToUsernames, token)) {
         // If the token authenticates, call back with the corresponding username. Restify-OAuth2 will put it in the
         // request's `username` property.
-        var username = tokenToUsernameMap[token];
+        var username = database.tokensToUsernames[token];
         return cb(null, username);
     }
 
