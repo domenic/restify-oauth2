@@ -5,3 +5,4 @@
 /examples/
 /.jshintrc
 /.npmignore
+/.travis.yml
