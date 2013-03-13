@@ -41,7 +41,11 @@ server.get(RESOURCES.INITIAL, function (req, res) {
     if (req.username) {
         response._links["http://rel.example.com/secret"] = { href: RESOURCES.SECRET };
     } else {
-        response._links["oauth2-token"] = { href: RESOURCES.TOKEN };
+        response._links["oauth2-token"] = {
+            href: RESOURCES.TOKEN,
+            "grant-types": "password",
+            "token-types": "bearer"
+        };
     }
 
     res.contentType = "application/hal+json";

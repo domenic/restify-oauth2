@@ -12,8 +12,10 @@ wwwAuthenticateRealm = "Realm string"
 tokenExpirationTime = 12345
 
 Assertion.addMethod("unauthorized", (message) ->
+    expectedLink = "<#{tokenEndpoint}>; rel=\"oauth2-token\"; grant-types=\"password\"; token-types=\"bearer\"";
+
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", "Bearer realm=\"#{wwwAuthenticateRealm}\"")
-    @_obj.header.should.have.been.calledWith("Link", "<#{tokenEndpoint}>; rel=\"oauth2-token\"")
+    @_obj.header.should.have.been.calledWith("Link", expectedLink)
     @_obj.send.should.have.been.calledOnce
     @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.UnauthorizedError))
     @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))

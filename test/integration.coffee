@@ -25,8 +25,10 @@ suite
     .get("/secret")
         .expect(401)
         .expect("should respond with WWW-Authenticate and Link headers", (err, res, body) ->
+            expectedLink = '</token>; rel="oauth2-token"; grant-types="password"; token-types="bearer"'
+
             res.headers.should.have.property("www-authenticate").that.equals('Bearer realm="Who goes there?"')
-            res.headers.should.have.property("link").that.equals('</token>; rel="oauth2-token"')
+            res.headers.should.have.property("link").that.equals(expectedLink)
         )
     .next()
     .get("/")
@@ -35,7 +37,10 @@ suite
             _links:
                 self: href: "/"
                 "http://rel.example.com/public": href: "/public"
-                "oauth2-token": href: "/token"
+                "oauth2-token":
+                    href: "/token"
+                    "grant-types": "password"
+                    "token-types": "bearer"
         )
     .next()
     .get("/public")
