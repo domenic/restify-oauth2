@@ -55,8 +55,8 @@ and if those values authenticate, you grant them an access token they can use fo
 this over simply requiring basic access authentication headers on every request is that now you can set those tokens to
 expire, or revoke them if they fall in to the wrong hands.
 
-To install Restify OAuth2's client credentials flow into your infrastructure, you will need to provide it with the
-following hooks in the `options.hooks` hash:
+To install Restify–OAuth2's client credentials flow into your infrastructure, you will need to provide it with the
+following hooks in the `options.hooks` hash. You can see some [example CC hooks][] in the demo application.
 
 #### `grantClientToken(clientId, clientSecret, cb)`
 
@@ -79,8 +79,8 @@ allows expiration and revocation of tokens. However, it does imply that you trus
 have at least one-time access to the user's credentials.
 
 To install Restify–OAuth2's resource owner password credentials flow into your infrastructure, you will need to
-provide it with the following hooks in the `options.hooks` hash. Also note that the demo application contains some
-[example hooks][].
+provide it with the following hooks in the `options.hooks` hash. You can see some [example ROPC hooks][] in the demo
+application.
 
 #### `validateClient(clientId, clientSecret, cb)`
 
@@ -113,9 +113,9 @@ The `hooks` hash is the only required option, but the following are also availab
 
 ## What Does That Look Like?
 
-OK, let's try something a bit more concrete. If you check out the [example server][] used in the integration tests,
-you'll see our setup. It uses the more complicated resource owner password credentials flow, so you can see the full
-power of Restify–OAuth2.
+OK, let's try something a bit more concrete. If you check out the [example servers][] used in the integration tests,
+you'll see our setup. Here we'll walk you through the more complicated resource owner password credentials example,
+but the idea for the client credentials example is very similar.
 
 ## /
 
@@ -123,8 +123,8 @@ The initial resource, at which people enter the server.
 
 * If a valid token is supplied, `req.username` is truthy, and the app responds with links to `/public` and `/secret`.
 * If no token is supplied, the app responds with links to `/token` and `/public`.
-* If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends an
-  appropriate 401 error.
+* If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
+  an appropriate 401 error.
 
 ## /token
 
@@ -141,8 +141,8 @@ A public resource anyone can access.
 * If a valid token is supplied, `req.username` contains the username, and the app uses that to send a personalized
   response.
 * If no token is supplied, `req.username` is `null`. The app still sends a response, just without personalizing.
-* If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends an
-  appropriate 401 error.
+* If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
+  an appropriate 401 error.
 
 ## /secret
 
@@ -163,5 +163,6 @@ A secret resource that only authenticated users can access.
 [oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-07#section-3.2
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
-[example hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
-[example server]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/server.js
+[example ROPC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
+[example CC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
+[example servers]: https://github.com/domenic/restify-oauth2/tree/master/examples
