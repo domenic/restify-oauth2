@@ -31,7 +31,7 @@ exports.validateClient = function (clientId, clientSecret, cb) {
     cb(null, isValid);
 };
 
-exports.grantToken = function (username, password, cb) {
+exports.grantUserToken = function (username, password, cb) {
     var isValid = _.has(database.users, username) && database.users[username].password === password;
     if (isValid) {
         // If the user authenticates, generate a token for them and store it so `exports.authenticateToken` below

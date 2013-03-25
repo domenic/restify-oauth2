@@ -40,7 +40,7 @@ beforeEach ->
 
     @authenticateToken = sinon.stub()
     @validateClient = sinon.stub()
-    @grantToken = sinon.stub()
+    @grantUserToken = sinon.stub()
 
     options = {
         tokenEndpoint
@@ -49,7 +49,7 @@ beforeEach ->
         hooks: {
             @authenticateToken
             @validateClient
-            @grantToken
+            @grantUserToken
         }
     }
 
@@ -104,12 +104,12 @@ describe "For POST requests to the token endpoint", ->
                             it "should use the username and password body fields to grant a token", ->
                                 @doIt()
 
-                                @grantToken.should.have.been.calledWith(@username, @password)
+                                @grantUserToken.should.have.been.calledWith(@username, @password)
 
-                            describe "when `grantToken` calls back with a token", ->
+                            describe "when `grantUserToken` calls back with a token", ->
                                 beforeEach ->
                                     @token = "token123"
-                                    @grantToken.yields(null, @token)
+                                    @grantUserToken.yields(null, @token)
 
                                 it "should send a response with access_token, token_type, and expires_in set", ->
                                     @doIt()
@@ -120,8 +120,8 @@ describe "For POST requests to the token endpoint", ->
                                         expires_in: tokenExpirationTime
                                     )
 
-                            describe "when `grantToken` calls back with `false`", ->
-                                beforeEach -> @grantToken.yields(null, false)
+                            describe "when `grantUserToken` calls back with `false`", ->
+                                beforeEach -> @grantUserToken.yields(null, false)
 
                                 it "should send a 401 response with error_type=invalid_client", ->
                                     @doIt()
@@ -129,8 +129,8 @@ describe "For POST requests to the token endpoint", ->
                                     @res.should.be.an.oauthError("Unauthorized", "invalid_client",
                                                                  "Username and password did not authenticate.")
 
-                            describe "when `grantToken` calls back with `null`", ->
-                                beforeEach -> @grantToken.yields(null, null)
+                            describe "when `grantUserToken` calls back with `null`", ->
+                                beforeEach -> @grantUserToken.yields(null, null)
 
                                 it "should send a 401 response with error_type=invalid_client", ->
                                     @doIt()
@@ -138,10 +138,10 @@ describe "For POST requests to the token endpoint", ->
                                     @res.should.be.an.oauthError("Unauthorized", "invalid_client",
                                                                  "Username and password did not authenticate.")
 
-                            describe "when `grantToken` calls back with an error", ->
+                            describe "when `grantUserToken` calls back with an error", ->
                                 beforeEach ->
                                     @error = new Error("Bad things happened, internally.")
-                                    @grantToken.yields(@error)
+                                    @grantUserToken.yields(@error)
 
                                 it "should call `next` with that error", ->
                                     @doIt()
@@ -162,10 +162,10 @@ describe "For POST requests to the token endpoint", ->
                                 @res.should.be.an.oauthError("Unauthorized", "invalid_client",
                                                              "Client ID and secret did not validate.")
 
-                            it "should not call the `grantToken` hook", ->
+                            it "should not call the `grantUserToken` hook", ->
                                 @doIt()
 
-                                @grantToken.should.not.have.been.called
+                                @grantUserToken.should.not.have.been.called
 
                         describe "when `validateClient` calls back with an error", ->
                             beforeEach ->
@@ -177,10 +177,10 @@ describe "For POST requests to the token endpoint", ->
 
                                 @next.should.have.been.calledWithExactly(@error)
 
-                            it "should not call the `grantToken` hook", ->
+                            it "should not call the `grantUserToken` hook", ->
                                 @doIt()
 
-                                @grantToken.should.not.have.been.called
+                                @grantUserToken.should.not.have.been.called
 
                     describe "without an authorization header", ->
                         it "should send a 400 response with error_type=invalid_request", ->
@@ -189,11 +189,11 @@ describe "For POST requests to the token endpoint", ->
                             @res.should.be.an.oauthError("BadRequest", "invalid_request",
                                                          "Must include a basic access authentication header.")
 
-                        it "should not call the `validateClient` or `grantToken` hooks", ->
+                        it "should not call the `validateClient` or `grantUserToken` hooks", ->
                             @doIt()
 
                             @validateClient.should.not.have.been.called
-                            @grantToken.should.not.have.been.called
+                            @grantUserToken.should.not.have.been.called
 
                     describe "with an authorization header that does not contain basic access credentials", ->
                         beforeEach ->
@@ -207,11 +207,11 @@ describe "For POST requests to the token endpoint", ->
                             @res.should.be.an.oauthError("BadRequest", "invalid_request",
                                                          "Must include a basic access authentication header.")
 
-                        it "should not call the `validateClient` or `grantToken` hooks", ->
+                        it "should not call the `validateClient` or `grantUserToken` hooks", ->
                             @doIt()
 
                             @validateClient.should.not.have.been.called
-                            @grantToken.should.not.have.been.called
+                            @grantUserToken.should.not.have.been.called
 
                 describe "that has no password field", ->
                     beforeEach -> @req.body.password = null
@@ -222,11 +222,11 @@ describe "For POST requests to the token endpoint", ->
                         @res.should.be.an.oauthError("BadRequest", "invalid_request",
                                                      "Must specify password field.")
 
-                    it "should not call the `validateClient` or `grantToken` hooks", ->
+                    it "should not call the `validateClient` or `grantUserToken` hooks", ->
                         @doIt()
 
                         @validateClient.should.not.have.been.called
-                        @grantToken.should.not.have.been.called
+                        @grantUserToken.should.not.have.been.called
 
             describe "that has no username field", ->
                 beforeEach -> @req.body.username = null
@@ -236,11 +236,11 @@ describe "For POST requests to the token endpoint", ->
 
                     @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must specify username field.")
 
-                it "should not call the `validateClient` or `grantToken` hooks", ->
+                it "should not call the `validateClient` or `grantUserToken` hooks", ->
                     @doIt()
 
                     @validateClient.should.not.have.been.called
-                    @grantToken.should.not.have.been.called
+                    @grantUserToken.should.not.have.been.called
 
         describe "that has grant_type=authorization_code", ->
             beforeEach -> @req.body.grant_type = "authorization_code"
@@ -251,11 +251,11 @@ describe "For POST requests to the token endpoint", ->
                 @res.should.be.an.oauthError("BadRequest", "unsupported_grant_type",
                                              "Only grant_type=password is currently supported.")
 
-            it "should not call the `validateClient` or `grantToken` hooks", ->
+            it "should not call the `validateClient` or `grantUserToken` hooks", ->
                 @doIt()
 
                 @validateClient.should.not.have.been.called
-                @grantToken.should.not.have.been.called
+                @grantUserToken.should.not.have.been.called
 
         describe "that has no grant_type value", ->
             it "should send a 400 response with error_type=invalid_request", ->
@@ -263,11 +263,11 @@ describe "For POST requests to the token endpoint", ->
 
                 @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must specify grant_type field.")
 
-            it "should not call the `validateClient` or `grantToken` hooks", ->
+            it "should not call the `validateClient` or `grantUserToken` hooks", ->
                 @doIt()
 
                 @validateClient.should.not.have.been.called
-                @grantToken.should.not.have.been.called
+                @grantUserToken.should.not.have.been.called
 
     describe "without a body", ->
         beforeEach -> @req.body = null
@@ -277,11 +277,11 @@ describe "For POST requests to the token endpoint", ->
 
             @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
 
-        it "should not call the `validateClient` or `grantToken` hooks", ->
+        it "should not call the `validateClient` or `grantUserToken` hooks", ->
             @doIt()
 
             @validateClient.should.not.have.been.called
-            @grantToken.should.not.have.been.called
+            @grantUserToken.should.not.have.been.called
 
     describe "without a body that has been parsed into an object", ->
         beforeEach -> @req.body = "Left as a string or buffer or something"
@@ -291,11 +291,11 @@ describe "For POST requests to the token endpoint", ->
 
             @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
 
-        it "should not call the `validateClient` or `grantToken` hooks", ->
+        it "should not call the `validateClient` or `grantUserToken` hooks", ->
             @doIt()
 
             @validateClient.should.not.have.been.called
-            @grantToken.should.not.have.been.called
+            @grantUserToken.should.not.have.been.called
 
 describe "For other requests", ->
     beforeEach -> @req.path = => "/other-resource"

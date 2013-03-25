@@ -57,7 +57,7 @@ Checks that the API client is authorized to use your API, and has the correct se
 `false` depending on the result of the check. It can also call back with an error if there was some internal server
 error while doing the check.
 
-#### `grantToken(username, password, cb)`
+#### `grantUserToken(username, password, cb)`
 
 Checks that the API client is authenticating on behalf of a real user with correct credentials. It should call back with
 a new token for that user if so, or `false` if the credentials are incorrect. It can also call back with an error if
