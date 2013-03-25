@@ -53,7 +53,7 @@ beforeEach ->
         }
     }
 
-    @doIt = => restifyOAuth2(@server, options)
+    @doIt = => restifyOAuth2.ropc(@server, options)
 
 it "should set up the token endpoint", ->
     @doIt()

@@ -3,7 +3,7 @@
 apiEasy = require("api-easy")
 require("chai").should()
 
-require("../examples/server") # starts the server
+require("../examples/ropc/server") # starts the server
 
 [clientKey, clientSecret] = ["officialApiClient", "C0FFEE"]
 [username, password] = ["AzureDiamond", "hunter2"]

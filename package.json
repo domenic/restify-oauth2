@@ -13,8 +13,8 @@
     "main": "lib/index.js",
     "scripts": {
         "test": "npm run test-unit && npm run test-integration",
-        "test-unit": "mocha test/unit.coffee --reporter spec --compilers coffee:coffee-script",
-        "test-integration": "vows test/integration.coffee --spec",
+        "test-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script",
+        "test-integration": "vows test/ropc-integration.coffee --spec",
         "lint": "jshint lib && jshint examples"
     },
     "dependencies": {

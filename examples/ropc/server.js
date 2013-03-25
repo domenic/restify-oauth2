@@ -1,15 +1,15 @@
 "use strict";
 
 var restify = require("restify");
-var restifyOAuth2 = require("..");
+var restifyOAuth2 = require("../..");
 var hooks = require("./hooks");
 
 // NB: we're using [HAL](http://stateless.co/hal_specification.html) here to communicate RESTful links among our
 // resources, but you could use any JSON linking format, or XML, or even just Link headers.
 
 var server = restify.createServer({
-    name: "Example Restify-OAuth2 Server",
-    version: require("../package.json").version,
+    name: "Example Restify-OAuth2 Resource Owner Password Credentials Server",
+    version: require("../../package.json").version,
     formatters: {
         "application/hal+json": function (req, res, body) {
             return res.formatters["application/json"](req, res, body);
@@ -26,7 +26,7 @@ var RESOURCES = Object.freeze({
 
 server.use(restify.authorizationParser());
 server.use(restify.bodyParser({ mapParams: false }));
-restifyOAuth2(server, { tokenEndpoint: RESOURCES.TOKEN, hooks: hooks });
+restifyOAuth2.ropc(server, { tokenEndpoint: RESOURCES.TOKEN, hooks: hooks });
 
 
 
