@@ -164,5 +164,5 @@ A secret resource that only authenticated users can access.
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
 [example ROPC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
-[example CC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
+[example CC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/cc/hooks.js
 [example servers]: https://github.com/domenic/restify-oauth2/tree/master/examples
