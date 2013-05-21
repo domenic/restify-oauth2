@@ -9,7 +9,8 @@ If you provide Restify–OAuth2 with the appropriate hooks, it will:
 
 * Set up a [token endpoint][], which returns [access token responses][token-endpoint-success] or
   [correctly-formatted error responses][token-endpoint-error].
-* For all other resources, when an access token is sent, it will validate it:
+* For all other resources, when an access token is [sent via the `Authorization` header][send-token], it will validate
+  it:
   * If the token fails validation, it will send an appropriate 401 error response, with a
     [`WWW-Authenticate`][www-authenticate] header and a [`Link`][web-linking] [`rel="oauth2-token"`][oauth2-token-rel]
     header pointing to the token endpoint.
@@ -121,7 +122,8 @@ but the idea for the client credentials example is very similar.
 
 The initial resource, at which people enter the server.
 
-* If a valid token is supplied, `req.username` is truthy, and the app responds with links to `/public` and `/secret`.
+* If a valid token is supplied in the `Authorization` header, `req.username` is truthy, and the app responds with
+  links to `/public` and `/secret`.
 * If no token is supplied, the app responds with links to `/token` and `/public`.
 * If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
   an appropriate 401 error.
@@ -138,8 +140,8 @@ OAuth 2 conformance, error handling, etc. is present in the application code: Re
 
 A public resource anyone can access.
 
-* If a valid token is supplied, `req.username` contains the username, and the app uses that to send a personalized
-  response.
+* If a valid token is supplied in the Authorization header, `req.username` contains the username, and the app uses
+  that to send a personalized response.
 * If no token is supplied, `req.username` is `null`. The app still sends a response, just without personalizing.
 * If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
   an appropriate 401 error.
@@ -148,7 +150,8 @@ A public resource anyone can access.
 
 A secret resource that only authenticated users can access.
 
-* If a valid token is supplied, `req.username` is truthy, and the app sends the secret data.
+* If a valid token is supplied in the Authorization header, `req.username` is truthy, and the app sends the secret
+  data.
 * If no token is supplied, `req.username` is `null`, so the application uses `res.sendUnauthorized()` to send a nice
   401 error with `WWW-Authenticate` and `Link` headers.
 * If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
@@ -160,6 +163,7 @@ A secret resource that only authenticated users can access.
 [token endpoint]: http://tools.ietf.org/html/rfc6749#section-3.2
 [token-endpoint-success]: http://tools.ietf.org/html/rfc6749#section-5.1
 [token-endpoint-error]: http://tools.ietf.org/html/rfc6749#section-5.2
+[send-token]: http://tools.ietf.org/html/rfc6750#section-2.1
 [oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-07#section-3.2
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
