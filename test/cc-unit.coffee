@@ -11,14 +11,29 @@ tokenEndpoint = "/token-uri"
 wwwAuthenticateRealm = "Realm string"
 tokenExpirationTime = 12345
 
-Assertion.addMethod("unauthorized", (message) ->
-    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; ' +
-                   'grant-types="client_credentials"; token-types="bearer"';
+Assertion.addMethod("unauthorized", (message, options) ->
+    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
+    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '"'
 
-    @_obj.header.should.have.been.calledWith("WWW-Authenticate", "Bearer realm=\"#{wwwAuthenticateRealm}\"")
+    if not options?.noWwwAuthenticateErrors
+        expectedWwwAuthenticate += ', error="invalid_token", error_description="' + message + '"'
+
+    @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
     @_obj.send.should.have.been.calledOnce
     @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.UnauthorizedError))
+    @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
+)
+
+Assertion.addMethod("bad", (message) ->
+    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
+    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '", error="invalid_request", ' +
+                              'error_description="' + message + '"'
+
+    @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
+    @_obj.header.should.have.been.calledWith("Link", expectedLink)
+    @_obj.send.should.have.been.calledOnce
+    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.BadRequestError))
     @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
@@ -243,7 +258,9 @@ describe "Client Credentials flow", ->
                     @doIt()
 
                     @req.resume.should.have.been.called
-                    @res.should.be.unauthorized("Bearer token invalid.")
+                    @res.should.be.unauthorized(
+                        "Bearer token invalid. Follow the oauth2-token link to get a valid one!"
+                    )
 
             describe "when the `authenticateToken` calls back with a 401 error", ->
                 beforeEach ->
@@ -284,10 +301,10 @@ describe "Client Credentials flow", ->
                     credentials: "asdf"
                     basic: { username: "aaa", password: "bbb" }
 
-            it "should send a 401 response with WWW-Authenticate and Link headers", ->
+            it "should send a 400 response with WWW-Authenticate and Link headers", ->
                 @doIt()
 
-                @res.should.be.unauthorized("Bearer token required.")
+                @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
         describe "with an authorization header that contains an empty bearer token", ->
             beforeEach ->
@@ -295,10 +312,10 @@ describe "Client Credentials flow", ->
                     scheme: "Bearer"
                     credentials: ""
 
-            it "should send a 401 response with WWW-Authenticate and Link headers", ->
+            it "should send a 400 response with WWW-Authenticate and Link headers", ->
                 @doIt()
 
-                @res.should.be.unauthorized("Bearer token required.")
+                @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
     describe "`res.sendUnauthorized`", ->
         beforeEach -> @doIt()
@@ -306,12 +323,17 @@ describe "Client Credentials flow", ->
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthorized()
 
-            it "should send a 401 response with WWW-Authenticate and Link headers, plus the default message", ->
-                @res.should.be.unauthorized("Bearer token required.")
+            it "should send a 401 response with WWW-Authenticate (but with no error code) and Link headers, plus the " +
+               "default message", ->
+                @res.should.be.unauthorized(
+                    "Authorization via bearer token required. Follow the oauth2-token link to get one!"
+                    noWwwAuthenticateErrors: true
+                )
 
         describe "with a message passed", ->
             message = "You really should go get a bearer token"
             beforeEach -> @res.sendUnauthorized(message)
 
-            it "should send a 401 response with WWW-Authenticate and Link headers, plus the specified message", ->
-                @res.should.be.unauthorized(message)
+            it "should send a 401 response with WWW-Authenticate (but with no error code) and Link headers, plus the " +
+               "specified message", ->
+                @res.should.be.unauthorized(message, noWwwAuthenticateErrors: true)
