@@ -30,6 +30,30 @@ suite
             res.headers.should.have.property("link").that.equals(expectedLink)
         )
     .next()
+    .path("/basicauth")
+        .discuss("with no basic auth or token")
+        .get()
+            .expect(401)
+            .expect("should respond with WWW-Authenticate and Link headers", (err, res, body) ->
+                expectedLink = '</token>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
+
+                res.headers.should.have.property("www-authenticate").that.equals('Bearer realm="Who goes there?"')
+                res.headers.should.have.property("link").that.equals(expectedLink)
+            )
+        .undiscuss()
+        .discuss("with valid client basic auth")
+            .setHeader("Authorization", "Basic #{basicAuth}")
+            .setHeader("Content-Type", "application/json")
+            .get()
+                .expect(200)
+                .expect("should respond successfully", (err, res, body) =>
+                    result = JSON.parse(body)
+
+                    result.should.have.property("message", "valid client basic auth")
+                )
+        .undiscuss()
+    .unpath()
+    .next()
     .get("/")
         .expect(
             200,
@@ -80,6 +104,14 @@ suite
         )
     .get("/secret")
         .expect(200)
+    .next()
+    .get("/basicauth")
+        .expect(200)
+        .expect("should respond successfully", (err, res, body) =>
+            result = JSON.parse(body)
+
+            result.should.have.property("message", "valid oauth token")
+        )
     .next()
     .get("/public")
         .expect(200)
