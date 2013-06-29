@@ -1,39 +1,35 @@
 {
-    "name": "restify-oauth2",
-    "description": "A simple OAuth 2 endpoint for Restify",
-    "keywords": ["restify", "oauth", "oauth2", "rest", "authentication", "api"],
-    "version": "2.1.0",
-    "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenicdenicola.com)",
-    "license": "WTFPL",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/domenic/restify-oauth2.git"
-    },
-    "bugs": "http://github.com/domenic/restify-oauth2/issues",
-    "main": "lib/index.js",
-    "scripts": {
-        "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration",
-        "test-ropc-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script",
-        "test-cc-unit": "mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script",
-        "test-ropc-integration": "vows test/ropc-integration.coffee --spec",
-        "test-cc-integration": "vows test/cc-integration.coffee --spec",
-        "lint": "jshint lib && jshint examples"
-    },
-    "dependencies": {
-        "underscore": "1.x"
-    },
-    "peerDependencies": {
-        "restify": "2.x"
-    },
-    "devDependencies": {
-        "api-easy": ">= 0.3.8",
-        "coffee-script": ">= 1.6.2",
-        "chai": ">= 1.6.0",
-        "jshint": ">= 2.1.2",
-        "mocha": ">= 1.9.0",
-        "restify": ">= 2.5.1",
-        "sinon": ">= 1.7.2",
-        "sinon-chai": ">= 2.4.0",
-        "vows": ">= 0.7.0"
-    }
+	"name": "restify-oauth2",
+	"description": "An improved OAuth 2 endpoint for Restify",
+	"keywords": [
+		"restify",
+		"oauth",
+		"oauth2",
+		"rest",
+		"authentication",
+		"api"
+	],
+	"version": "2.1.0",
+	"author": "Benny Cohen <benny@mediamagic.co.il> (http://mediamagic.co.il)",
+	"license": "WTFPL",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/mediamagic/restify-oauth2.git"
+	},
+	"bugs": "http://github.com/mediamagic/restify-oauth2/issues",
+	"main": "lib/index.js",
+	"dependencies": {
+		"underscore": "1.x"
+	},
+	"peerDependencies": {
+		"restify": "2.x"
+	},
+	"devDependencies": {
+		"jshint": ">= 2.1.2",
+		"restify": ">= 2.5.1",
+		"grunt-cli": "~0.1.9",
+		"grunt": "~0.4.1",
+		"grunt-contrib-jshint": "~0.6.0",
+		"jasmine-node": "~1.10.0"
+	}
 }
