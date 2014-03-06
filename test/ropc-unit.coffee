@@ -117,7 +117,7 @@ describe "Resource Owner Password Credentials flow", ->
                             it "should validate the client, with client ID/secret from the basic authentication", ->
                                 @doIt()
 
-                                @validateClient.should.have.been.calledWith(@clientId, @clientSecret, @scope)
+                                @validateClient.should.have.been.calledWith(@clientId, @clientSecret)
 
                             describe "when `validateClient` calls back with `true`", ->
                                 beforeEach -> @validateClient.yields(null, true)
@@ -125,7 +125,7 @@ describe "Resource Owner Password Credentials flow", ->
                                 it "should use the username and password body fields to grant a token", ->
                                     @doIt()
 
-                                    @grantUserToken.should.have.been.calledWith(@username, @password)
+                                    @grantUserToken.should.have.been.calledWith(@username, @password, @scope)
 
                                 describe "when `grantUserToken` calls back with a token", ->
                                     beforeEach ->

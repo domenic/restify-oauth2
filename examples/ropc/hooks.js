@@ -26,7 +26,6 @@ function generateToken(data) {
 exports.validateClient = function (clientId, clientSecret, cb) {
     // Call back with `true` to signal that the client is valid, and `false` otherwise.
     // Call back with an error if you encounter an internal server error situation while trying to validate.
-
     var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
     cb(null, isValid);
 };

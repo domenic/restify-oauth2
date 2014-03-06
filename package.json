@@ -34,6 +34,6 @@
         "restify": ">= 2.5.1",
         "sinon": ">= 1.7.2",
         "sinon-chai": ">= 2.4.0",
-        "vows": ">= 0.7.0"
+        "vows": "https://github.com/snoble/vows/tarball/master"
     }
 }
