@@ -19,7 +19,7 @@ function generateToken(data) {
     return sha256.update(data).digest("base64");
 }
 
-exports.grantClientToken = function (clientId, clientSecret, cb) {
+exports.grantClientToken = function (clientId, clientSecret, scope, cb) {
     var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
     if (isValid) {
         // If the client authenticates, generate a token for them and store it so `exports.authenticateToken` below

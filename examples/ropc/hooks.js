@@ -26,12 +26,11 @@ function generateToken(data) {
 exports.validateClient = function (clientId, clientSecret, cb) {
     // Call back with `true` to signal that the client is valid, and `false` otherwise.
     // Call back with an error if you encounter an internal server error situation while trying to validate.
-
     var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
     cb(null, isValid);
 };
 
-exports.grantUserToken = function (username, password, cb) {
+exports.grantUserToken = function (username, password, scope, cb) {
     var isValid = _.has(database.users, username) && database.users[username].password === password;
     if (isValid) {
         // If the user authenticates, generate a token for them and store it so `exports.authenticateToken` below

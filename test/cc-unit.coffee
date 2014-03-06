@@ -55,6 +55,7 @@ beforeEach ->
         use: (plugin) => plugin(@req, @res, @next)
 
     @authenticateToken = sinon.stub()
+    @authorizeToken = sinon.stub()
     @grantClientToken = sinon.stub()
 
     options = {
@@ -64,6 +65,7 @@ beforeEach ->
         hooks: {
             @authenticateToken
             @grantClientToken
+            @authorizeToken
         }
     }
 
@@ -77,8 +79,10 @@ describe "Client Credentials flow", ->
 
     describe "For POST requests to the token endpoint", ->
         beforeEach ->
+            @scope = "testscope"
             @req.method = "POST"
             @req.path = => tokenEndpoint
+            @req.url = @req.path + "?scope=" + @scope
 
             baseDoIt = @doIt
             @doIt = =>
@@ -98,15 +102,16 @@ describe "Client Credentials flow", ->
                             scheme: "Basic"
                             basic: { username: @clientId, password: @clientSecret }
 
-                    it "should use the client ID and secret  values to grant a token", ->
+                    it "should use the client ID and secret values to grant a token", ->
                         @doIt()
 
-                        @grantClientToken.should.have.been.calledWith(@clientId, @clientSecret)
+                        @grantClientToken.should.have.been.calledWith(@clientId, @clientSecret, @scope)
 
                     describe "when `grantClientToken` calls back with a token", ->
                         beforeEach ->
                             @token = "token123"
-                            @grantClientToken.yields(null, @token)
+                            @parsed_scope = @scope.split(",")
+                            @grantClientToken.yields(null, @token, @parsed_scope)
 
                         it "should send a response with access_token, token_type, and expires_in set", ->
                             @doIt()
@@ -115,6 +120,7 @@ describe "Client Credentials flow", ->
                                 access_token: @token,
                                 token_type: "Bearer"
                                 expires_in: tokenExpirationTime
+                                scope: @parsed_scope
                             )
 
                     describe "when `grantClientToken` calls back with `false`", ->
@@ -243,6 +249,33 @@ describe "Client Credentials flow", ->
                 beforeEach ->
                     @clientId = "client123"
                     @authenticateToken.yields(null, @clientId)
+
+                describe "when an `authorizeToken` callback is given", ->
+
+                    it "should call the authorize callback with the `clientId` and request parameters", ->
+                        @doIt()
+
+                        @req.resume.should.have.been.called
+                        @authorizeToken.should.have.been.calledWith(@clientId, @req)
+
+                    describe "when it returns true", ->
+                        beforeEach -> @authorizeToken.yields(null, true)
+
+                        it "should resume the request and call `next`", ->
+                            @doIt()
+
+                            @req.resume.should.have.been.called
+                            @next.should.have.been.calledWithExactly()
+
+                    describe "when it returns false", ->
+                        beforeEach -> @authorizeToken.yields(null, false)
+
+                        it "should resume the request and send a 400 response", ->
+                            @doIt()
+
+                            @req.resume.should.have.been.called
+                            @res.send.should.have.been.calledWith(400)
+                            
 
                 it "should resume the request, set the `clientId` property on the request, and call `next`", ->
                     @doIt()

@@ -57,6 +57,7 @@ beforeEach ->
     @authenticateToken = sinon.stub()
     @validateClient = sinon.stub()
     @grantUserToken = sinon.stub()
+    @authorizeToken = sinon.stub()
 
     options = {
         tokenEndpoint
@@ -66,6 +67,7 @@ beforeEach ->
             @authenticateToken
             @validateClient
             @grantUserToken
+            @authorizeToken
         }
     }
 
@@ -79,8 +81,10 @@ describe "Resource Owner Password Credentials flow", ->
 
     describe "For POST requests to the token endpoint", ->
         beforeEach ->
+            @scope = "testscope"
             @req.method = "POST"
             @req.path = => tokenEndpoint
+            @req.url = @req.path + "?scope=" + @scope
 
             baseDoIt = @doIt
             @doIt = =>
@@ -121,20 +125,22 @@ describe "Resource Owner Password Credentials flow", ->
                                 it "should use the username and password body fields to grant a token", ->
                                     @doIt()
 
-                                    @grantUserToken.should.have.been.calledWith(@username, @password)
+                                    @grantUserToken.should.have.been.calledWith(@username, @password, @scope)
 
                                 describe "when `grantUserToken` calls back with a token", ->
                                     beforeEach ->
                                         @token = "token123"
-                                        @grantUserToken.yields(null, @token)
+                                        @parsed_scope = @scope.split(",")
+                                        @grantUserToken.yields(null, @token, @parsed_scope)
 
-                                    it "should send a response with access_token, token_type, and expires_in set", ->
+                                    it "should send a response with access_token, token_type, scope and expires_in set", ->
                                         @doIt()
 
                                         @res.send.should.have.been.calledWith(
-                                            access_token: @token,
+                                            access_token: @token
                                             token_type: "Bearer"
                                             expires_in: tokenExpirationTime
+                                            scope:  @parsed_scope
                                         )
 
                                 describe "when `grantUserToken` calls back with `false`", ->
@@ -332,6 +338,32 @@ describe "Resource Owner Password Credentials flow", ->
                 beforeEach ->
                     @username = "user123"
                     @authenticateToken.yields(null, @username)
+
+                describe "when an `authorizeToken` callback is given", ->
+
+                    it "should call the authorize callback with the `username` and request parameters", ->
+                        @doIt()
+                        
+                        @req.resume.should.have.been.called
+                        @authorizeToken.should.have.been.calledWith(@username, @req)
+
+                    describe "when it returns true", ->
+                        beforeEach -> @authorizeToken.yields(null, true)
+
+                        it "should resume the request and call `next`", ->
+                            @doIt()
+
+                            @req.resume.should.have.been.called
+                            @next.should.have.been.calledWithExactly()
+
+                    describe "when it returns false", ->
+                        beforeEach -> @authorizeToken.yields(null, false)
+
+                        it "should resume the request and send a 400 response", ->
+                            @doIt()
+
+                            @req.resume.should.have.been.called
+                            @res.send.should.have.been.calledWith(400)
 
                 it "should resume the request, set the `username` property on the request, and call `next`", ->
                     @doIt()

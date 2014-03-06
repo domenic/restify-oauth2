@@ -59,7 +59,7 @@ expire, or revoke them if they fall in to the wrong hands.
 To install Restify–OAuth2's client credentials flow into your infrastructure, you will need to provide it with the
 following hooks in the `options.hooks` hash. You can see some [example CC hooks][] in the demo application.
 
-#### `grantClientToken(clientId, clientSecret, cb)`
+#### `grantClientToken(clientId, clientSecret, scope, cb)`
 
 Checks that the API client is authorized to use your API, and has the correct secret. It should call back with a new
 token for that client if so, or `false` if the credentials are incorrect. It can also call back with an error if there
@@ -70,6 +70,11 @@ was some internal server error while validating the credentials.
 Checks that a token is valid, i.e. that it was granted in the past by `grantClientToken`. It should call back with the
 client ID for that token if so, or `false` if the token is invalid. It can also call back with an error if there
 was some internal server error while looking up the token.
+
+#### `authorizeToken(clientId, req, cb)` (optional)
+
+Use this function to authorize the authenticated user to access the requested resource. It should call back with 
+a boolean value `true` to authorize the request, `false` otherwise.
 
 ### Resource Owner Password Credentials Hooks
 
@@ -89,17 +94,23 @@ Checks that the API client is authorized to use your API, and has the correct se
 or `false` depending on the result of the check. It can also call back with an error if there was some internal server
 error while doing the check.
 
-#### `grantUserToken(username, password, cb)`
+#### `grantUserToken(username, password, scope, cb)`
 
 Checks that the API client is authenticating on behalf of a real user with correct credentials. It should call back
 with a new token for that user if so, or `false` if the credentials are incorrect. It can also call back with an error
-if there was some internal server error while validating the credentials.
+if there was some internal server error while validating the credentials. The scope variable gives you access to the 
+optional `scope` query parameter, so that you can store it together with the token.
 
 #### `authenticateToken(token, cb)`
 
 Checks that a token is valid, i.e. that it was granted in the past by `grantUserToken`. It should call back with the
 username for that token if so, or `false` if the token is invalid. It can also call back with an error if there
 was some internal server error while looking up the token.
+
+#### `authorizeToken(username, req, cb)` (optional)
+
+Use this function to authorize the authenticated user to access the requested resource. It should call back with 
+a boolean value `true` to authorize the request, `false` otherwise.
 
 ### Other Options
 
@@ -111,6 +122,8 @@ The `hooks` hash is the only required option, but the following are also availab
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
   calling back with `false` from `authenticateToken` when the token expires. Defaults to `Infinity`.
+* `reqPropertyName`: the name of the request property that will hold the client/user data upon authorization. Defaults to 
+  `username` for `Client Credentials` scheme, and `clientId` for `Resource Owner Password Credentials` scheme
 
 ## What Does That Look Like?
 
