@@ -122,6 +122,8 @@ The `hooks` hash is the only required option, but the following are also availab
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
   calling back with `false` from `authenticateToken` when the token expires. Defaults to `Infinity`.
+* `reqPropertyName`: the name of the request property that will hold the client/user data upon authorization. Defaults to 
+  `username` for `Client Credentials` scheme, and `clientId` for `Resource Owner Password Credentials` scheme
 
 ## What Does That Look Like?
 

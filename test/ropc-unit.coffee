@@ -130,15 +130,17 @@ describe "Resource Owner Password Credentials flow", ->
                                 describe "when `grantUserToken` calls back with a token", ->
                                     beforeEach ->
                                         @token = "token123"
-                                        @grantUserToken.yields(null, @token)
+                                        @parsed_scope = @scope.split(",")
+                                        @grantUserToken.yields(null, @token, @parsed_scope)
 
-                                    it "should send a response with access_token, token_type, and expires_in set", ->
+                                    it "should send a response with access_token, token_type, scope and expires_in set", ->
                                         @doIt()
 
                                         @res.send.should.have.been.calledWith(
-                                            access_token: @token,
+                                            access_token: @token
                                             token_type: "Bearer"
                                             expires_in: tokenExpirationTime
+                                            scope:  @parsed_scope
                                         )
 
                                 describe "when `grantUserToken` calls back with `false`", ->

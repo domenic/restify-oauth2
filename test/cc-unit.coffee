@@ -110,7 +110,8 @@ describe "Client Credentials flow", ->
                     describe "when `grantClientToken` calls back with a token", ->
                         beforeEach ->
                             @token = "token123"
-                            @grantClientToken.yields(null, @token)
+                            @parsed_scope = @scope.split(",")
+                            @grantClientToken.yields(null, @token, @parsed_scope)
 
                         it "should send a response with access_token, token_type, and expires_in set", ->
                             @doIt()
@@ -119,6 +120,7 @@ describe "Client Credentials flow", ->
                                 access_token: @token,
                                 token_type: "Bearer"
                                 expires_in: tokenExpirationTime
+                                scope: @parsed_scope
                             )
 
                     describe "when `grantClientToken` calls back with `false`", ->
