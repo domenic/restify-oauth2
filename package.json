@@ -13,11 +13,11 @@
     "main": "lib/index.js",
     "scripts": {
         "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration",
-        "test-ropc-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
-        "test-cc-unit": "mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
-        "test-ropc-integration": "vows test/ropc-integration.coffee --spec",
-        "test-cc-integration": "vows test/cc-integration.coffee --spec",
-        "lint": "jshint lib && jshint examples"
+        "test-ropc-unit": "node_modules/mocha/bin/mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
+        "test-cc-unit": "node_modules/mocha/bin/mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
+        "test-ropc-integration": "node_modules/vows/bin/vows test/ropc-integration.coffee --spec",
+        "test-cc-integration": "node_modules/vows/bin/vows test/cc-integration.coffee --spec",
+        "lint": "node_modules/jshint/bin/jshint lib && node_modules/jshint/bin/jshint examples"
     },
     "dependencies": {
         "underscore": "1.x"
