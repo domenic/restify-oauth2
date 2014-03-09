@@ -26,14 +26,14 @@
         "restify": "2.x"
     },
     "devDependencies": {
-        "api-easy": ">= 0.3.8",
-        "coffee-script": ">= 1.6.2",
-        "chai": ">= 1.6.0",
-        "jshint": ">= 2.1.2",
-        "mocha": ">= 1.9.0",
-        "restify": ">= 2.5.1",
-        "sinon": ">= 1.7.2",
-        "sinon-chai": ">= 2.4.0",
-        "vows": ">= 0.7.0"
+        "api-easy": "~0.3.8",
+        "coffee-script": "1.6.3",
+        "chai": "^1.9.0",
+        "jshint": "^2.4.4",
+        "mocha": "~1.17.1",
+        "restify": "^2.6.3",
+        "sinon": "^1.9.0",
+        "sinon-chai": "^2.5.0",
+        "vows": "~0.7.0"
     }
 }
