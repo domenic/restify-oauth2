@@ -140,19 +140,19 @@ describe "Resource Owner Password Credentials flow", ->
                                 describe "when `grantUserToken` calls back with `false`", ->
                                     beforeEach -> @grantUserToken.yields(null, false)
 
-                                    it "should send a 401 response with error_type=invalid_client", ->
+                                    it "should send a 401 response with error_type=invalid_grant", ->
                                         @doIt()
 
-                                        @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                                        @res.should.be.an.oauthError("Unauthorized", "invalid_grant",
                                                                      "Username and password did not authenticate.")
 
                                 describe "when `grantUserToken` calls back with `null`", ->
                                     beforeEach -> @grantUserToken.yields(null, null)
 
-                                    it "should send a 401 response with error_type=invalid_client", ->
+                                    it "should send a 401 response with error_type=invalid_grant", ->
                                         @doIt()
 
-                                        @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                                        @res.should.be.an.oauthError("Unauthorized", "invalid_grant",
                                                                      "Username and password did not authenticate.")
 
                                 describe "when `grantUserToken` calls back with an error", ->
