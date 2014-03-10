@@ -93,22 +93,22 @@ describe "Resource Owner Password Credentials flow", ->
             describe "that has grant_type=password", ->
                 beforeEach -> @req.body.grant_type = "password"
 
-                describe "and has a username field", ->
+                describe "with a basic access authentication header", ->
                     beforeEach ->
-                        @username = "username123"
-                        @req.body.username = @username
+                        [@clientId, @clientSecret] = ["clientId123", "clientSecret456"]
+                        @req.authorization =
+                            scheme: "Basic"
+                            basic: { username: @clientId, password: @clientSecret }
 
-                    describe "and a password field", ->
+                    describe "and has a username field", ->
                         beforeEach ->
-                            @password = "password456"
-                            @req.body.password = @password
+                            @username = "username123"
+                            @req.body.username = @username
 
-                        describe "with a basic access authentication header", ->
+                        describe "and a password field", ->
                             beforeEach ->
-                                [@clientId, @clientSecret] = ["clientId123", "clientSecret456"]
-                                @req.authorization =
-                                    scheme: "Basic"
-                                    basic: { username: @clientId, password: @clientSecret }
+                                @password = "password456"
+                                @req.body.password = @password
 
                             it "should validate the client, with client ID/secret from the basic authentication", ->
                                 @doIt()
@@ -199,12 +199,14 @@ describe "Resource Owner Password Credentials flow", ->
 
                                     @grantUserToken.should.not.have.been.called
 
-                        describe "without an authorization header", ->
+                        describe "that has no password field", ->
+                            beforeEach -> @req.body.password = null
+
                             it "should send a 400 response with error_type=invalid_request", ->
                                 @doIt()
 
                                 @res.should.be.an.oauthError("BadRequest", "invalid_request",
-                                                             "Must include a basic access authentication header.")
+                                                             "Must specify password field.")
 
                             it "should not call the `validateClient` or `grantUserToken` hooks", ->
                                 @doIt()
@@ -212,32 +214,13 @@ describe "Resource Owner Password Credentials flow", ->
                                 @validateClient.should.not.have.been.called
                                 @grantUserToken.should.not.have.been.called
 
-                        describe "with an authorization header that does not contain basic access credentials", ->
-                            beforeEach ->
-                                @req.authorization =
-                                    scheme: "Bearer"
-                                    credentials: "asdf"
-
-                            it "should send a 400 response with error_type=invalid_request", ->
-                                @doIt()
-
-                                @res.should.be.an.oauthError("BadRequest", "invalid_request",
-                                                             "Must include a basic access authentication header.")
-
-                            it "should not call the `validateClient` or `grantUserToken` hooks", ->
-                                @doIt()
-
-                                @validateClient.should.not.have.been.called
-                                @grantUserToken.should.not.have.been.called
-
-                    describe "that has no password field", ->
-                        beforeEach -> @req.body.password = null
+                    describe "that has no username field", ->
+                        beforeEach -> @req.body.username = null
 
                         it "should send a 400 response with error_type=invalid_request", ->
                             @doIt()
 
-                            @res.should.be.an.oauthError("BadRequest", "invalid_request",
-                                                         "Must specify password field.")
+                            @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must specify username field.")
 
                         it "should not call the `validateClient` or `grantUserToken` hooks", ->
                             @doIt()
@@ -245,13 +228,30 @@ describe "Resource Owner Password Credentials flow", ->
                             @validateClient.should.not.have.been.called
                             @grantUserToken.should.not.have.been.called
 
-                describe "that has no username field", ->
-                    beforeEach -> @req.body.username = null
+                describe "without an authorization header", ->
+                    it "should send a 400 response with error_type=invalid_request", ->
+                        @doIt()
+
+                        @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                                                     "Must include a basic access authentication header.")
+
+                    it "should not call the `validateClient` or `grantUserToken` hooks", ->
+                        @doIt()
+
+                        @validateClient.should.not.have.been.called
+                        @grantUserToken.should.not.have.been.called
+
+                describe "with an authorization header that does not contain basic access credentials", ->
+                    beforeEach ->
+                        @req.authorization =
+                            scheme: "Bearer"
+                            credentials: "asdf"
 
                     it "should send a 400 response with error_type=invalid_request", ->
                         @doIt()
 
-                        @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must specify username field.")
+                        @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                                                     "Must include a basic access authentication header.")
 
                     it "should not call the `validateClient` or `grantUserToken` hooks", ->
                         @doIt()
