@@ -63,7 +63,7 @@ server.get(RESOURCES.PUBLIC, function (req, res) {
 
 server.get(RESOURCES.SECRET, function (req, res) {
     if (!req.username) {
-        return res.sendUnauthorized();
+        return res.sendUnauthenticated();
     }
 
     var response = {

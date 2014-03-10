@@ -317,22 +317,22 @@ describe "Client Credentials flow", ->
 
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
-    describe "`res.sendUnauthorized`", ->
+    describe "`res.sendUnauthenticated`", ->
         beforeEach -> @doIt()
 
         describe "with no arguments", ->
-            beforeEach -> @res.sendUnauthorized()
+            beforeEach -> @res.sendUnauthenticated()
 
             it "should send a 401 response with WWW-Authenticate (but with no error code) and Link headers, plus the " +
                "default message", ->
                 @res.should.be.unauthorized(
-                    "Authorization via bearer token required. Follow the oauth2-token link to get one!"
+                    "Authentication via bearer token required. Follow the oauth2-token link to get one!"
                     noWwwAuthenticateErrors: true
                 )
 
         describe "with a message passed", ->
             message = "You really should go get a bearer token"
-            beforeEach -> @res.sendUnauthorized(message)
+            beforeEach -> @res.sendUnauthenticated(message)
 
             it "should send a 401 response with WWW-Authenticate (but with no error code) and Link headers, plus the " +
                "specified message", ->

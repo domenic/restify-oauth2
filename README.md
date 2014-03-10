@@ -18,7 +18,7 @@ If you provide Restify–OAuth2 with the appropriate hooks, it will:
     determined by looking up the access token.
 * If no access token is sent, it simply sets `req.clientId`/`req.username` to `null`:
   * You can check for this whenever there is a resource you want to protect.
-  * If the user tries to access a protected resource, you can use Restify–OAuth2's `res.sendUnauthorized()` to send
+  * If the user tries to access a protected resource, you can use Restify–OAuth2's `res.sendUnauthenticated()` to send
     appropriate 401 errors with helpful `WWW-Authenticate` and `Link` headers.
 
 ## Use and Configuration
@@ -152,7 +152,7 @@ A secret resource that only authenticated users can access.
 
 * If a valid token is supplied in the Authorization header, `req.username` is truthy, and the app sends the secret
   data.
-* If no token is supplied, `req.username` is `null`, so the application uses `res.sendUnauthorized()` to send a nice
+* If no token is supplied, `req.username` is `null`, so the application uses `res.sendUnauthenticated()` to send a nice
   401 error with `WWW-Authenticate` and `Link` headers.
 * If an invalid token is supplied, Restify–OAuth2 intercepts the request before it gets to the application, and sends
   an appropriate 400 or 401 error.
