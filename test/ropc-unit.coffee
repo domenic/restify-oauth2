@@ -410,6 +410,20 @@ describe "Resource Owner Password Credentials flow", ->
                     @req.should.have.property("username", @username)
                     @next.should.have.been.calledWithExactly()
 
+            describe "when the `authenticateToken` calls back with a username and a list of scopes", ->
+                beforeEach ->
+                    @username = "client123"
+                    @scopes = ["one", "two"]
+                    @authenticateToken.yields(null, @username, @scopes)
+
+                it "should resume the request, set the `username` and the `scopesGranted` properties on the request, and call `next`", ->
+                    @doIt()
+
+                    @req.resume.should.have.been.called
+                    @req.should.have.property("username", @username)
+                    @req.should.have.property("scopesGranted", @scopes)
+                    @next.should.have.been.calledWithExactly()
+
             describe "when the `authenticateToken` calls back with `false`", ->
                 beforeEach -> @authenticateToken.yields(null, false)
 

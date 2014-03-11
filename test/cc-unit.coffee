@@ -329,6 +329,20 @@ describe "Client Credentials flow", ->
                     @req.should.have.property("clientId", @clientId)
                     @next.should.have.been.calledWithExactly()
 
+            describe "when the `authenticateToken` calls back with a client ID and a list of scopes", ->
+                beforeEach ->
+                    @clientId = "client123"
+                    @scopes = ["one", "two"]
+                    @authenticateToken.yields(null, @clientId, @scopes)
+
+                it "should resume the request, set the `clientId` and the `scopesGranted` properties on the request, and call `next`", ->
+                    @doIt()
+
+                    @req.resume.should.have.been.called
+                    @req.should.have.property("clientId", @clientId)
+                    @req.should.have.property("scopesGranted", @scopes)
+                    @next.should.have.been.calledWithExactly()
+
             describe "when the `authenticateToken` calls back with `false`", ->
                 beforeEach -> @authenticateToken.yields(null, false)
 
