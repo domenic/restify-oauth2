@@ -116,6 +116,10 @@ describe "Client Credentials flow", ->
                                 token_type: "Bearer"
                                 expires_in: tokenExpirationTime
                             )
+                        it "should call next after success", ->
+                            @doIt()
+
+                            @next.should.have.been.called
 
                     describe "when `grantClientToken` calls back with `false`", ->
                         beforeEach -> @grantClientToken.yields(null, false)
