@@ -49,16 +49,32 @@ suite
         .discuss("with valid client credentials")
             .setHeader("Authorization", "Basic #{basicAuth}")
             .setHeader("Content-Type", "application/json")
-            .post({ grant_type: "client_credentials" })
-                .expect(200)
-                .expect("should respond with the token", (err, res, body) ->
-                    result = JSON.parse(body)
+            .discuss("with a limited scope")
+                .post({ grant_type: "client_credentials", scope: "one:read abc" })
+                    .expect(200)
+                    .expect("should respond with the token and the scope requestd only", (err, res, body) ->
+                        result = JSON.parse(body)
+                        
+                        result.should.have.property("token_type", "Bearer")
+                        result.should.have.property("access_token")
+                        result.should.have.property("scopes").to.eql(["one:read"])
 
-                    result.should.have.property("token_type", "Bearer")
-                    result.should.have.property("access_token")
+                        accessToken = result.access_token
+                    )
+            .undiscuss()
+            .discuss("without a scope")
+                .post({ grant_type: "client_credentials"})
+                    .expect(200)
+                    .expect("should respond with the token and an empty scope", (err, res, body) ->
+                        result = JSON.parse(body)
 
-                    accessToken = result.access_token
-                )
+                        result.should.have.property("token_type", "Bearer")
+                        result.should.have.property("access_token")
+                        result.should.have.property("scopes").to.eql([])
+
+                        accessToken = result.access_token
+                    )
+            .undiscuss()
         .undiscuss()
         .discuss("with invalid client credentials")
             .setHeader("Authorization", "Basic MTIzOjQ1Ng==")
