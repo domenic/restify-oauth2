@@ -101,6 +101,15 @@ Checks that a token is valid, i.e. that it was granted in the past by `grantUser
 username for that token if so, or `false` if the token is invalid. It can also call back with an error if there
 was some internal server error while looking up the token.
 
+### Scopes
+
+Optionally, it is possible to limit the scope of the issued tokens, so that you can implement an authorization system in your application.
+
+#### `grantScopes(clientId, clientSecret, token, scopesRequested, cb)` or
+#### `grantScopes(clientId, clientSecret, username, password, token, scopesRequested, cb)`
+
+The hook is called after `authenticateToken`, and takes as argument the credentials, the token generated and the scopes requested. The `scopes` parameter is an array obtained from the the body parameter named `scope` as a space-separated string.
+
 ### Other Options
 
 The `hooks` hash is the only required option, but the following are also available for tweaking:

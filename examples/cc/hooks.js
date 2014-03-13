@@ -1,14 +1,15 @@
-"use strict";
+    "use strict";
 
 var _ = require("underscore");
 var crypto = require("crypto");
 
 var database = {
     clients: {
-        officialApiClient: { secret: "C0FFEE" },
+        officialApiClient: { secret: "C0FFEE", scopesGranted: ["one:read", "two"] },
         unofficialClient: { secret: "DECAF" }
     },
-    tokensToClientIds: {}
+    tokensToClientIds: {},
+    tokenScopes: {}
 };
 
 function generateToken(data) {
@@ -37,12 +38,27 @@ exports.grantClientToken = function (clientId, clientSecret, cb) {
     cb(null, false);
 };
 
+exports.grantScopes = function (clientId, clientSecret, token, scopesRequested, cb) {
+    //in this example, we will allow at most only the scopes defined in the database
+    var scopesGranted = _.intersection(scopesRequested, database.clients[clientId].scopesGranted);
+    database.tokenScopes[token] = scopesGranted;
+
+    //just for the sake of the demo, if you authorize all the scopesRequested, you can just pass `true` to the callback
+    if (scopesGranted === scopesRequested) {
+        return cb(null, true);
+    }
+
+    cb(null, scopesGranted);
+};
+
 exports.authenticateToken = function (token, cb) {
     if (_.has(database.tokensToClientIds, token)) {
         // If the token authenticates, call back with the corresponding client ID. Restify-OAuth2 will put it in the
         // request's `clientId` property.
         var username = database.tokensToClientIds[token];
-        return cb(null, username);
+        var scopes_granted = database.tokenScopes[token];
+
+        return cb(null, username, scopes_granted);
     }
 
     // If the token does not authenticate, call back with `false` to signal that.

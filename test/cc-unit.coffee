@@ -13,7 +13,7 @@ tokenExpirationTime = 12345
 
 Assertion.addMethod("unauthorized", (message, options) ->
     expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
-    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '"'
+    expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '"'
 
     if not options?.noWwwAuthenticateErrors
         expectedWwwAuthenticate += ', error="invalid_token", error_description="' + message + '"'
@@ -29,7 +29,7 @@ Assertion.addMethod("unauthorized", (message, options) ->
 
 Assertion.addMethod("bad", (message) ->
     expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
-    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '", error="invalid_request", ' +
+    expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '", error="invalid_request", ' +
                               'error_description="' + message + '"'
 
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
@@ -59,6 +59,7 @@ beforeEach ->
 
     @authenticateToken = sinon.stub()
     @grantClientToken = sinon.stub()
+    @grantScopes = sinon.stub()
 
     options = {
         tokenEndpoint
@@ -71,6 +72,19 @@ beforeEach ->
     }
 
     @doIt = => restifyOAuth2.cc(@server, options)
+
+    scope_options = {
+        tokenEndpoint
+        wwwAuthenticateRealm
+        tokenExpirationTime
+        hooks: {
+            @authenticateToken
+            @grantClientToken
+            @grantScopes
+        }
+    }
+        
+    @doItWithScope = => restifyOAuth2.cc(@server, scope_options)
 
 describe "Client Credentials flow", ->
     it "should set up the token endpoint", ->
@@ -120,10 +134,85 @@ describe "Client Credentials flow", ->
                                 token_type: "Bearer"
                                 expires_in: tokenExpirationTime
                             )
-                        it "should call `next`", ->
-                            @doIt()
 
-                            @tokenNext.should.have.been.calledWithExactly()
+                        describe "and a `grantScopes` hook is defined", ->
+                            beforeEach ->
+                                baseDoIt = @doItWithScope
+                                @doIt = =>
+                                    baseDoIt()
+                                    @postToTokenEndpoint()
+                                @scopes = "one two"
+                                @req.body.scope = @scopes
+
+                            it "should be called with clientId, clientSecret and scopesRequested (as an array)", ->
+                                @doIt()
+
+                                @grantScopes.should.have.been.calledWith(@clientId, @clientSecret, @token, @scopes.split(" "))
+
+                            describe "when `grantScopes` calls back with an array of granted scopes", ->
+                                beforeEach -> 
+                                    @grantedScopes = ["three"]
+                                    @grantScopes.yields(null, @grantedScopes)
+
+                                it "should send a response with access_token, token_type, scopes and expires_in set, where scopes is limited to the granted scopes", ->
+                                    @doIt()
+
+                                    @res.send.should.have.been.calledWith(
+                                        access_token: @token,
+                                        token_type: "Bearer"
+                                        expires_in: tokenExpirationTime,
+                                        scopes: @grantedScopes
+                                    )
+
+                                it "should call `next`", ->
+                                    @doIt()
+
+                                    @tokenNext.should.have.been.calledWithExactly()
+
+                            describe "when `grantScopes` calls back with `true`", ->
+                                beforeEach -> @grantScopes.yields(null, true)
+
+                                it "should send a response with access_token, token_type, scopes and expires_in set, where scopes is the same as the requested one", ->
+                                    @doIt()
+
+                                    @res.send.should.have.been.calledWith(
+                                        access_token: @token,
+                                        token_type: "Bearer"
+                                        expires_in: tokenExpirationTime,
+                                        scopes: @scopes.split(" ")
+                                    )
+
+                                it "should call `next`", ->
+                                    @doIt()
+
+                                    @tokenNext.should.have.been.calledWithExactly()
+
+                            describe "when `grantScopes` calls back with an error", ->
+                                beforeEach ->
+                                    @error = new Error("Bad things happened, internally.")
+                                    @grantScopes.yields(@error)
+
+                                it "should call `next` with that error", ->
+                                    @doIt()
+
+                                    @tokenNext.should.have.been.calledWithExactly(@error)
+
+                        describe "and a `grantScopes` hook is not defined", ->
+                            beforeEach -> @grantScopes = undefined
+
+                            it "should send a response with access_token, token_type, and expires_in set", ->
+                                @doIt()
+
+                                @res.send.should.have.been.calledWith(
+                                    access_token: @token,
+                                    token_type: "Bearer"
+                                    expires_in: tokenExpirationTime
+                                )
+
+                            it "should call `next`", ->
+                                @doIt()
+
+                                @tokenNext.should.have.been.calledWithExactly()
 
                     describe "when `grantClientToken` calls back with `false`", ->
                         beforeEach -> @grantClientToken.yields(null, false)
@@ -261,6 +350,20 @@ describe "Client Credentials flow", ->
                     @req.should.have.property("clientId", @clientId)
                     @pluginNext.should.have.been.calledWithExactly()
 
+            describe "when the `authenticateToken` calls back with a client ID and a list of scopes", ->
+                beforeEach ->
+                    @clientId = "client123"
+                    @scopes = ["one", "two"]
+                    @authenticateToken.yields(null, @clientId, @scopes)
+
+                it "should resume the request, set the `clientId` and the `scopesGranted` properties on the request, and call `next`", ->
+                    @doIt()
+
+                    @req.resume.should.have.been.called
+                    @req.should.have.property("clientId", @clientId)
+                    @req.should.have.property("scopesGranted", @scopes)
+                    @pluginNext.should.have.been.calledWithExactly()
+
             describe "when the `authenticateToken` calls back with `false`", ->
                 beforeEach -> @authenticateToken.yields(null, false)
 
@@ -340,7 +443,7 @@ describe "Client Credentials flow", ->
                "default message", ->
                 @res.should.be.unauthorized(
                     "Authentication via bearer token required. Follow the oauth2-token link to get one!"
-                    { noWwwAuthenticateErrors: true, send: true }
+                     { noWwwAuthenticateErrors: true, send: true }
                 )
 
         describe "with a message passed", ->
