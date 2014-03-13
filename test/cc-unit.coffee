@@ -13,46 +13,49 @@ tokenExpirationTime = 12345
 
 Assertion.addMethod("unauthorized", (message, options) ->
     expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
-    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '"'
+    expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '"'
 
     if not options?.noWwwAuthenticateErrors
         expectedWwwAuthenticate += ', error="invalid_token", error_description="' + message + '"'
 
+    spyToTest = if options?.send then @_obj.send else @_obj.nextSpy
+
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
-    @_obj.send.should.have.been.calledOnce
-    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.UnauthorizedError))
-    @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
+    spyToTest.should.have.been.calledOnce
+    spyToTest.should.have.been.calledWith(sinon.match.instanceOf(restify.UnauthorizedError))
+    spyToTest.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
 Assertion.addMethod("bad", (message) ->
     expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="client_credentials"; token-types="bearer"'
-    expectedWwwAuthenticate = 'Bearer realm="' +  wwwAuthenticateRealm + '", error="invalid_request", ' +
+    expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '", error="invalid_request", ' +
                               'error_description="' + message + '"'
 
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
-    @_obj.send.should.have.been.calledOnce
-    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.BadRequestError))
-    @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
+    @_obj.nextSpy.should.have.been.calledOnce
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(restify.BadRequestError))
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
 Assertion.addMethod("oauthError", (errorClass, errorType, errorDescription) ->
     desiredBody = { error: errorType, error_description: errorDescription }
-    @_obj.send.should.have.been.calledOnce
-    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify[errorClass + "Error"]))
-    @_obj.send.should.have.been.calledWith(sinon.match.has("message", errorDescription))
-    @_obj.send.should.have.been.calledWith(sinon.match.has("body", desiredBody))
+    @_obj.nextSpy.should.have.been.calledOnce
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(restify[errorClass + "Error"]))
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("message", errorDescription))
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("body", desiredBody))
 )
 
 beforeEach ->
     @req = { pause: sinon.spy(), resume: sinon.spy(), username: "anonymous", authorization: {} }
     @res = { header: sinon.spy(), send: sinon.spy() }
-    @next = sinon.spy((x) => if x? then @res.send(x))
+    @tokenNext = sinon.spy()
+    @pluginNext = sinon.spy()
 
     @server =
-        post: sinon.spy((path, handler) => @postToTokenEndpoint = => handler(@req, @res, @next))
-        use: (plugin) => plugin(@req, @res, @next)
+        post: sinon.spy((path, handler) => @postToTokenEndpoint = => handler(@req, @res, @tokenNext))
+        use: (plugin) => plugin(@req, @res, @pluginNext)
 
     @authenticateToken = sinon.stub()
     @grantClientToken = sinon.stub()
@@ -93,6 +96,7 @@ describe "Client Credentials flow", ->
         beforeEach ->
             @req.method = "POST"
             @req.path = => tokenEndpoint
+            @res.nextSpy = @tokenNext
 
             baseDoIt = @doIt
             @doIt = =>
@@ -160,6 +164,11 @@ describe "Client Credentials flow", ->
                                         scopes: @grantedScopes
                                     )
 
+                                it "should call `next`", ->
+                                    @doIt()
+
+                                    @tokenNext.should.have.been.calledWithExactly()
+
                             describe "when `grantScopes` calls back with `true`", ->
                                 beforeEach -> @grantScopes.yields(null, true)
 
@@ -173,6 +182,11 @@ describe "Client Credentials flow", ->
                                         scopes: @scopes.split(" ")
                                     )
 
+                                it "should call `next`", ->
+                                    @doIt()
+
+                                    @tokenNext.should.have.been.calledWithExactly()
+
                             describe "when `grantScopes` calls back with an error", ->
                                 beforeEach ->
                                     @error = new Error("Bad things happened, internally.")
@@ -181,7 +195,7 @@ describe "Client Credentials flow", ->
                                 it "should call `next` with that error", ->
                                     @doIt()
 
-                                    @next.should.have.been.calledWithExactly(@error)
+                                    @tokenNext.should.have.been.calledWithExactly(@error)
 
                         describe "and a `grantScopes` hook is not defined", ->
                             beforeEach -> @grantScopes = undefined
@@ -194,6 +208,11 @@ describe "Client Credentials flow", ->
                                     token_type: "Bearer"
                                     expires_in: tokenExpirationTime
                                 )
+
+                            it "should call `next`", ->
+                                @doIt()
+
+                                @tokenNext.should.have.been.calledWithExactly()
 
                     describe "when `grantClientToken` calls back with `false`", ->
                         beforeEach -> @grantClientToken.yields(null, false)
@@ -221,7 +240,7 @@ describe "Client Credentials flow", ->
                         it "should call `next` with that error", ->
                             @doIt()
 
-                            @next.should.have.been.calledWithExactly(@error)
+                            @tokenNext.should.have.been.calledWithExactly(@error)
 
                 describe "without an authorization header", ->
                     it "should send a 400 response with error_type=invalid_request", ->
@@ -304,7 +323,9 @@ describe "Client Credentials flow", ->
                 @grantClientToken.should.not.have.been.called
 
     describe "For other requests", ->
-        beforeEach -> @req.path = => "/other-resource"
+        beforeEach ->
+            @req.path = => "/other-resource"
+            @res.nextSpy = @pluginNext
 
         describe "with an authorization header that contains a valid bearer token", ->
             beforeEach ->
@@ -327,7 +348,7 @@ describe "Client Credentials flow", ->
 
                     @req.resume.should.have.been.called
                     @req.should.have.property("clientId", @clientId)
-                    @next.should.have.been.calledWithExactly()
+                    @pluginNext.should.have.been.calledWithExactly()
 
             describe "when the `authenticateToken` calls back with a client ID and a list of scopes", ->
                 beforeEach ->
@@ -341,7 +362,7 @@ describe "Client Credentials flow", ->
                     @req.resume.should.have.been.called
                     @req.should.have.property("clientId", @clientId)
                     @req.should.have.property("scopesGranted", @scopes)
-                    @next.should.have.been.calledWithExactly()
+                    @pluginNext.should.have.been.calledWithExactly()
 
             describe "when the `authenticateToken` calls back with `false`", ->
                 beforeEach -> @authenticateToken.yields(null, false)
@@ -374,7 +395,7 @@ describe "Client Credentials flow", ->
                     @doIt()
 
                     @req.resume.should.have.been.called
-                    @res.send.should.have.been.calledWith(@error)
+                    @pluginNext.should.have.been.calledWith(@error)
                     @res.header.should.not.have.been.called
 
         describe "without an authorization header", ->
@@ -384,7 +405,7 @@ describe "Client Credentials flow", ->
                 @doIt()
 
                 should.not.exist(@req.clientId)
-                @next.should.have.been.calledWithExactly()
+                @pluginNext.should.have.been.calledWithExactly()
 
         describe "with an authorization header that does not contain a bearer token", ->
             beforeEach ->
@@ -410,7 +431,10 @@ describe "Client Credentials flow", ->
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
     describe "`res.sendUnauthenticated`", ->
-        beforeEach -> @doIt()
+        beforeEach ->
+            @req.path = => "/other-resource"
+            @res.nextSpy = @pluginNext
+            @doIt()
 
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthenticated()
@@ -419,7 +443,7 @@ describe "Client Credentials flow", ->
                "default message", ->
                 @res.should.be.unauthorized(
                     "Authentication via bearer token required. Follow the oauth2-token link to get one!"
-                    noWwwAuthenticateErrors: true
+                     { noWwwAuthenticateErrors: true, send: true }
                 )
 
         describe "with a message passed", ->
@@ -428,4 +452,4 @@ describe "Client Credentials flow", ->
 
             it "should send a 401 response with WWW-Authenticate (but with no error code) and Link headers, plus the " +
                "specified message", ->
-                @res.should.be.unauthorized(message, noWwwAuthenticateErrors: true)
+                @res.should.be.unauthorized(message, { noWwwAuthenticateErrors: true, send: true })
