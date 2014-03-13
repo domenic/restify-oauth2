@@ -143,7 +143,7 @@ describe "Client Credentials flow", ->
                             it "should be called with clientId, clientSecret and scopesRequested (as an array)", ->
                                 @doIt()
 
-                                @grantScopes.should.have.been.calledWith(@clientId, @clientSecret, @scopes.split(" "))
+                                @grantScopes.should.have.been.calledWith(@clientId, @clientSecret, @token, @scopes.split(" "))
 
                             describe "when `grantScopes` calls back with an array of granted scopes", ->
                                 beforeEach -> 

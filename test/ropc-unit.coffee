@@ -155,7 +155,7 @@ describe "Resource Owner Password Credentials flow", ->
                                         it "should be called with clientId, clientSecret, username, password and scopesRequested (as an array)", ->
                                             @doIt()
 
-                                            @grantScopes.should.have.been.calledWith(@clientId, @clientSecret, @username, @password, @scopes.split(" "))
+                                            @grantScopes.should.have.been.calledWith(@clientId, @clientSecret, @username, @password, @token, @scopes.split(" "))
 
                                         describe "when `grantScopes` calls back with an array of granted scopes", ->
                                             beforeEach -> 
