@@ -54,7 +54,7 @@ beforeEach ->
     @pluginNext = sinon.spy()
 
     @server =
-        post: sinon.spy((path, handler) => @postToTokenEndpoint = => handler(@req, @res, @tokenNext))
+        post: sinon.spy((path, plugins, handler) => @postToTokenEndpoint = => handler(@req, @res, @tokenNext))
         use: (plugin) => plugin(@req, @res, @pluginNext)
 
     @authenticateToken = sinon.stub()

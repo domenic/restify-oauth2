@@ -25,8 +25,12 @@ var RESOURCES = Object.freeze({
 });
 
 server.use(restify.authorizationParser());
-server.use(restify.bodyParser({ mapParams: false }));
-restifyOAuth2.cc(server, { tokenEndpoint: RESOURCES.TOKEN, hooks: hooks });
+server.use();
+restifyOAuth2.cc(server, {
+    tokenEndpoint: RESOURCES.TOKEN,
+    hooks: hooks,
+    plugins: restify.bodyParser({ mapParams: false })
+});
 
 
 
