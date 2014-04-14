@@ -1,8 +1,8 @@
 {
     "name": "restify-oauth2",
     "description": "A simple OAuth 2 endpoint for Restify",
-    "keywords": ["restify", "oauth", "oauth2", "rest", "authentication", "api"],
-    "version": "3.0.1",
+    "keywords": ["restify", "oauth", "oauth2", "rest", "authorization", "authentication", "api"],
+    "version": "4.0.0",
     "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenic.me/)",
     "license": "WTFPL",
     "repository": {
