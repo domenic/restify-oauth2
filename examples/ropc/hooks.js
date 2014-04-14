@@ -23,11 +23,12 @@ function generateToken(data) {
     return sha256.update(data).digest("base64");
 }
 
-exports.validateClient = function (clientId, clientSecret, cb) {
+exports.validateClient = function (credentials, req, cb) {
     // Call back with `true` to signal that the client is valid, and `false` otherwise.
     // Call back with an error if you encounter an internal server error situation while trying to validate.
 
-    var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
+    var isValid = _.has(database.clients, credentials.clientId) &&
+                  database.clients[credentials.clientId].secret === credentials.clientSecret;
     cb(null, isValid);
 };
 

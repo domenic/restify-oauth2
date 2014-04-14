@@ -83,7 +83,7 @@ To install Restify–OAuth2's resource owner password credentials flow into your
 provide it with the following hooks in the `options.hooks` hash. You can see some [example ROPC hooks][] in the demo
 application.
 
-#### `validateClient(clientId, clientSecret, cb)`
+#### `validateClient({ clientId, clientSecret }, req, cb)`
 
 Checks that the API client is authorized to use your API, and has the correct secret. It should call back with `true`
 or `false` depending on the result of the check. It can also call back with an error if there was some internal server

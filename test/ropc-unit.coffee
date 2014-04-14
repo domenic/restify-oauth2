@@ -117,7 +117,7 @@ describe "Resource Owner Password Credentials flow", ->
                             it "should validate the client, with client ID/secret from the basic authentication", ->
                                 @doIt()
 
-                                @validateClient.should.have.been.calledWith(@clientId, @clientSecret)
+                                @validateClient.should.have.been.calledWith({ @clientId, @clientSecret }, @req)
 
                             describe "when `validateClient` calls back with `true`", ->
                                 beforeEach -> @validateClient.yields(null, true)
