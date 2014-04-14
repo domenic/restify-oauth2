@@ -249,16 +249,13 @@ describe "Client Credentials flow", ->
                 @req.pause.should.have.been.called
                 @authenticateToken.should.have.been.calledWith(@token, @req)
 
-            describe "when the `authenticateToken` calls back with a client ID", ->
-                beforeEach ->
-                    @clientId = "client123"
-                    @authenticateToken.yields(null, @clientId)
+            describe "when the `authenticateToken` calls back with `true`", ->
+                beforeEach -> @authenticateToken.yields(null, true)
 
-                it "should resume the request, set the `clientId` property on the request, and call `next`", ->
+                it "should resume the request and call `next`", ->
                     @doIt()
 
                     @req.resume.should.have.been.called
-                    @req.should.have.property("clientId", @clientId)
                     @pluginNext.should.have.been.calledWithExactly()
 
             describe "when the `authenticateToken` calls back with `false`", ->

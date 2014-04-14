@@ -14,12 +14,14 @@ If you provide Restify–OAuth2 with the appropriate hooks, it will:
   * If the token fails validation, it will send [an appropriate 400 or 401 error response][token-usage-error], with a
     [`WWW-Authenticate`][www-authenticate] header and a [`Link`][web-linking] [`rel="oauth2-token"`][oauth2-token-rel]
     header pointing to the token endpoint.
-  * Otherwise, it will set either `req.clientId` or `req.username` (depending on which flow you are using) to a value
-    determined by looking up the access token.
-* If no access token is sent, it simply sets `req.clientId`/`req.username` to `null`:
-  * You can check for this whenever there is a resource you want to protect.
+  * Otherwise, you can use your `authenticateToken` and `grantScopes` hooks to set properties on the request object for
+    your routes to check later.
+* If no access token is sent, it ensures that `req.username` is set to `null`; furthermore, none of your hooks are
+  called, so you can be sure that no properties that they set are present.
+  * You can then check for these conditions whenever there is a resource you want to protect.
   * If the user tries to access a protected resource, you can use Restify–OAuth2's `res.sendUnauthenticated()` to send
-    appropriate 401 errors with helpful `WWW-Authenticate` and `Link` headers.
+    appropriate 401 errors with helpful `WWW-Authenticate` and `Link` headers, or its `res.sendUnauthorized()` to send
+    appropriate 403 errors with similar headers.
 
 ## Use and Configuration
 
@@ -67,9 +69,11 @@ was some internal server error while validating the credentials.
 
 #### `authenticateToken(token, req, cb)`
 
-Checks that a token is valid, i.e. that it was granted in the past by `grantClientToken`. It should call back with the
-client ID for that token if so, or `false` if the token is invalid. It can also call back with an error if there
-was some internal server error while looking up the token.
+Checks that a token is valid, i.e. that it was granted in the past by `grantClientToken`. It should call back with
+`true` if so, or `false` if the token is invalid. It can also call back with an error if there was some internal
+server error while looking up the token. If the token is valid, it is likely useful to set a property on the request
+object indicating that so that your routes can check it later, e.g. `req.authenticated = true` or
+`req.clientId = lookupClientIdFrom(token)`.
 
 ### Resource Owner Password Credentials Hooks
 
@@ -97,9 +101,11 @@ if there was some internal server error while validating the credentials.
 
 #### `authenticateToken(token, req, cb)`
 
-Checks that a token is valid, i.e. that it was granted in the past by `grantUserToken`. It should call back with the
-username for that token if so, or `false` if the token is invalid. It can also call back with an error if there
-was some internal server error while looking up the token.
+Checks that a token is valid, i.e. that it was granted in the past by `grantUserToken`. It should call back with
+`true` if so, or `false` if the token is invalid. It can also call back with an error if there was some internal
+server error while looking up the token. If the token is valid, it is likely useful to set a property on the request
+object indicating that so that your routes can check it later, e.g. `req.authenticated = true` or
+`req.username = lookupUsernameFrom(token)`.
 
 ### Other Options
 

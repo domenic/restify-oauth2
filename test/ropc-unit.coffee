@@ -341,16 +341,13 @@ describe "Resource Owner Password Credentials flow", ->
                 @req.pause.should.have.been.called
                 @authenticateToken.should.have.been.calledWith(@token, @req)
 
-            describe "when the `authenticateToken` calls back with a username", ->
-                beforeEach ->
-                    @username = "user123"
-                    @authenticateToken.yields(null, @username)
+            describe "when the `authenticateToken` calls back with `true`", ->
+                beforeEach -> @authenticateToken.yields(null, true)
 
-                it "should resume the request, set the `username` property on the request, and call `next`", ->
+                it "should resume the request and call `next`", ->
                     @doIt()
 
                     @req.resume.should.have.been.called
-                    @req.should.have.property("username", @username)
                     @pluginNext.should.have.been.calledWithExactly()
 
             describe "when the `authenticateToken` calls back with `false`", ->

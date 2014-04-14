@@ -53,10 +53,10 @@ exports.grantUserToken = function (credentials, req, cb) {
 
 exports.authenticateToken = function (token, req, cb) {
     if (_.has(database.tokensToUsernames, token)) {
-        // If the token authenticates, call back with the corresponding username. Restify-OAuth2 will put it in the
-        // request's `username` property.
-        var username = database.tokensToUsernames[token];
-        return cb(null, username);
+        // If the token authenticates, set the corresponding property on the request, and call back with `true`.
+        // The routes can now use these properties to check if the request is authorized and authenticated.
+        req.username = database.tokensToUsernames[token];
+        return cb(null, true);
     }
 
     // If the token does not authenticate, call back with `false` to signal that.
