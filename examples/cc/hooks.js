@@ -38,7 +38,7 @@ exports.grantClientToken = function (credentials, req, cb) {
     cb(null, false);
 };
 
-exports.authenticateToken = function (token, cb) {
+exports.authenticateToken = function (token, req, cb) {
     if (_.has(database.tokensToClientIds, token)) {
         // If the token authenticates, call back with the corresponding client ID. Restify-OAuth2 will put it in the
         // request's `clientId` property.

@@ -247,7 +247,7 @@ describe "Client Credentials flow", ->
                 @doIt()
 
                 @req.pause.should.have.been.called
-                @authenticateToken.should.have.been.calledWith(@token)
+                @authenticateToken.should.have.been.calledWith(@token, @req)
 
             describe "when the `authenticateToken` calls back with a client ID", ->
                 beforeEach ->

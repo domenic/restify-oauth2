@@ -65,7 +65,7 @@ Checks that the API client is authorized to use your API, and has the correct se
 token for that client if so, or `false` if the credentials are incorrect. It can also call back with an error if there
 was some internal server error while validating the credentials.
 
-#### `authenticateToken(token, cb)`
+#### `authenticateToken(token, req, cb)`
 
 Checks that a token is valid, i.e. that it was granted in the past by `grantClientToken`. It should call back with the
 client ID for that token if so, or `false` if the token is invalid. It can also call back with an error if there
@@ -95,7 +95,7 @@ Checks that the API client is authenticating on behalf of a real user with corre
 with a new token for that user if so, or `false` if the credentials are incorrect. It can also call back with an error
 if there was some internal server error while validating the credentials.
 
-#### `authenticateToken(token, cb)`
+#### `authenticateToken(token, req, cb)`
 
 Checks that a token is valid, i.e. that it was granted in the past by `grantUserToken`. It should call back with the
 username for that token if so, or `false` if the token is invalid. It can also call back with an error if there

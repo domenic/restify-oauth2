@@ -50,7 +50,7 @@ exports.grantUserToken = function (username, password, cb) {
     cb(null, false);
 };
 
-exports.authenticateToken = function (token, cb) {
+exports.authenticateToken = function (token, req, cb) {
     if (_.has(database.tokensToUsernames, token)) {
         // If the token authenticates, call back with the corresponding username. Restify-OAuth2 will put it in the
         // request's `username` property.
