@@ -125,7 +125,10 @@ describe "Resource Owner Password Credentials flow", ->
                                 it "should use the username and password body fields to grant a token", ->
                                     @doIt()
 
-                                    @grantUserToken.should.have.been.calledWith(@username, @password)
+                                    @grantUserToken.should.have.been.calledWith(
+                                        { @clientId, @clientSecret, @username, @password },
+                                        @req
+                                    )
 
                                 describe "when `grantUserToken` calls back with a token", ->
                                     beforeEach ->

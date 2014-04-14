@@ -32,14 +32,15 @@ exports.validateClient = function (credentials, req, cb) {
     cb(null, isValid);
 };
 
-exports.grantUserToken = function (username, password, cb) {
-    var isValid = _.has(database.users, username) && database.users[username].password === password;
+exports.grantUserToken = function (credentials, req, cb) {
+    var isValid = _.has(database.users, credentials.username) &&
+                  database.users[credentials.username].password === credentials.password;
     if (isValid) {
         // If the user authenticates, generate a token for them and store it so `exports.authenticateToken` below
         // can look it up later.
 
-        var token = generateToken(username + ":" + password);
-        database.tokensToUsernames[token] = username;
+        var token = generateToken(credentials.username + ":" + credentials.password);
+        database.tokensToUsernames[token] = credentials.username;
 
         // Call back with the token so Restify-OAuth2 can pass it on to the client.
         return cb(null, token);
