@@ -107,6 +107,29 @@ server error while looking up the token. If the token is valid, it is likely use
 object indicating that so that your routes can check it later, e.g. `req.authenticated = true` or
 `req.username = lookupUsernameFrom(token)`.
 
+### Scope-Granting Hook
+
+Optionally, it is possible to limit the [scope][] of the issued tokens, so that you can implement an authorization
+system in your application in addition to simple authentication.
+
+#### `grantScopes(credentials, scopesRequested, req, cb)`
+
+This hook is called after the token has been granted by `authenticateToken`. In the client credentials flow,
+`credentials` will be `{ clientId, clientSecret, token }`; in the resource owner password credentials flow, it will be
+`{ clientId, clientSecret, username, password, token }`. In both cases, `scopesRequested` will be an array of the
+requested scopes.
+
+This hook can respond in several ways:
+
+* It can call back with `true` to grant all of the requested scopes.
+* It can call back with `false` to indicate that the requested scopes are invalid, unknown, or exceed the set of scopes
+  that should be granted to the given credentials.
+* It can call back with an array to grant a different set of scopes.
+* It can call back with an error if there was some internal server error while granting scopes.
+
+In the cases of `false` or an internal server error, you should probably revoke the token before calling back, as the
+server will send the user an error response, instead of a successful token grant.
+
 ### Other Options
 
 The `hooks` hash is the only required option, but the following are also available for tweaking:
@@ -174,6 +197,7 @@ A secret resource that only authenticated users can access.
 [oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-07#section-3.2
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
+[scope]: http://tools.ietf.org/html/rfc6749#section-3.3
 [example ROPC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
 [example CC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/cc/hooks.js
 [example servers]: https://github.com/domenic/restify-oauth2/tree/master/examples

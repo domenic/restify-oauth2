@@ -12,11 +12,12 @@
     "bugs": "http://github.com/domenic/restify-oauth2/issues",
     "main": "lib/index.js",
     "scripts": {
-        "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration",
+        "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration && npm run test-cc-with-scopes-integration",
         "test-ropc-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script",
         "test-cc-unit": "mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script",
         "test-ropc-integration": "vows test/ropc-integration.coffee --spec",
         "test-cc-integration": "vows test/cc-integration.coffee --spec",
+        "test-cc-with-scopes-integration": "vows test/cc-with-scopes-integration.coffee --spec",
         "lint": "jshint lib && jshint examples"
     },
     "dependencies": {
