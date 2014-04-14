@@ -19,14 +19,15 @@ function generateToken(data) {
     return sha256.update(data).digest("base64");
 }
 
-exports.grantClientToken = function (clientId, clientSecret, cb) {
-    var isValid = _.has(database.clients, clientId) && database.clients[clientId].secret === clientSecret;
+exports.grantClientToken = function (credentials, req, cb) {
+    var isValid = _.has(database.clients, credentials.clientId) &&
+                  database.clients[credentials.clientId].secret === credentials.clientSecret;
     if (isValid) {
         // If the client authenticates, generate a token for them and store it so `exports.authenticateToken` below
         // can look it up later.
 
-        var token = generateToken(clientId + ":" + clientSecret);
-        database.tokensToClientIds[token] = clientId;
+        var token = generateToken(credentials.clientId + ":" + credentials.clientSecret);
+        database.tokensToClientIds[token] = credentials.clientId;
 
         // Call back with the token so Restify-OAuth2 can pass it on to the client.
         return cb(null, token);

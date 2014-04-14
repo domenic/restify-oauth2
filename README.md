@@ -59,7 +59,7 @@ expire, or revoke them if they fall in to the wrong hands.
 To install Restify–OAuth2's client credentials flow into your infrastructure, you will need to provide it with the
 following hooks in the `options.hooks` hash. You can see some [example CC hooks][] in the demo application.
 
-#### `grantClientToken(clientId, clientSecret, cb)`
+#### `grantClientToken({ clientId, clientSecret }, req, cb)`
 
 Checks that the API client is authorized to use your API, and has the correct secret. It should call back with a new
 token for that client if so, or `false` if the credentials are incorrect. It can also call back with an error if there

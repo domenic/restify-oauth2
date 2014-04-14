@@ -105,7 +105,7 @@ describe "Client Credentials flow", ->
                     it "should use the client ID and secret  values to grant a token", ->
                         @doIt()
 
-                        @grantClientToken.should.have.been.calledWith(@clientId, @clientSecret)
+                        @grantClientToken.should.have.been.calledWith({ @clientId, @clientSecret }, @req)
 
                     describe "when `grantClientToken` calls back with a token", ->
                         beforeEach ->
