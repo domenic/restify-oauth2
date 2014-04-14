@@ -87,7 +87,7 @@ application.
 
 Checks that the API client is authorized to use your API, and has the correct secret. It should call back with `true`
 or `false` depending on the result of the check. It can also call back with an error if there was some internal server
-error while doing the check.
+error while doing the check. This hook is not required if `clientType: "public"` is passed as an option.
 
 #### `grantUserToken(username, password, cb)`
 
@@ -111,6 +111,9 @@ The `hooks` hash is the only required option, but the following are also availab
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
   calling back with `false` from `authenticateToken` when the token expires. Defaults to `Infinity`.
+* `clientType`: valid values are `"confidential"` (default) or `"public"`.  Client credentials are not authenticated 
+  for public clients. This option only applies to the [Resource Owner Password Credentials][ropc] flow. OAuth2 only 
+  allows for confidential clients for the [Client Credentials][cc] flow. 
 
 ## What Does That Look Like?
 
