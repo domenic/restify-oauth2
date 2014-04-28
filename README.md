@@ -107,6 +107,25 @@ server error while looking up the token. If the token is valid, it is likely use
 object indicating that so that your routes can check it later, e.g. `req.authenticated = true` or
 `req.username = lookupUsernameFrom(token)`.
 
+#### Allowing Public Clients
+
+The Resource Owner Password Credentials flow can be used with both public and confidential [client types][]. If you
+wish to allow public clients, i.e. you want to allow your server to grant tokens without requiring client credentials,
+then you can specify this by passing the string `"allow public clients"` in place of a `validateClient` hook. That is:
+
+```js
+restifyOAuth2.ropc(server, {
+    hooks: {
+        validateClient: "allow public clients",
+        grantUserToken: function () { ... },
+        authenticateToken: function () { ... }
+    }
+});
+```
+
+In this case `grantUserToken` (and `grantScopes`, below) will not be passed `clientId` and `clientSecret` values in
+their credentials objects.
+
 ### Scope-Granting Hook
 
 Optionally, it is possible to limit the [scope][] of the issued tokens, so that you can implement an authorization
@@ -197,6 +216,7 @@ A secret resource that only authenticated users can access.
 [oauth2-token-rel]: http://tools.ietf.org/html/draft-wmills-oauth-lrdd-07#section-3.2
 [web-linking]: http://tools.ietf.org/html/rfc5988
 [www-authenticate]: http://tools.ietf.org/html/rfc2617#section-3.2.1
+[client types]: http://tools.ietf.org/html/rfc6749#section-2.1
 [scope]: http://tools.ietf.org/html/rfc6749#section-3.3
 [example ROPC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/ropc/hooks.js
 [example CC hooks]: https://github.com/domenic/restify-oauth2/blob/master/examples/cc/hooks.js
