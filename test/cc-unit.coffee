@@ -292,7 +292,7 @@ describe "Client Credentials flow", ->
                     @doIt()
 
                     @res.should.be.an.oauthError("BadRequest", "unsupported_grant_type",
-                                                 "Only grant_type=client_credentials is supported.")
+                                                 "Grant type is not supported.")
 
                 it "should not call the `grantClientToken` hook", ->
                     @doIt()
