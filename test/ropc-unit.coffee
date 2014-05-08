@@ -12,7 +12,7 @@ wwwAuthenticateRealm = "Realm string"
 tokenExpirationTime = 12345
 
 Assertion.addMethod("unauthorized", (message, options) ->
-    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh"; token-types="bearer"'
+    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh_token"; token-types="bearer"'
     expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '"'
 
     if not options?.noWwwAuthenticateErrors
@@ -28,7 +28,7 @@ Assertion.addMethod("unauthorized", (message, options) ->
 )
 
 Assertion.addMethod("unauthenticated", (message) ->
-    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh"; token-types="bearer"'
+    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh_token"; token-types="bearer"'
 
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
     @_obj.send.should.have.been.calledOnce
@@ -37,7 +37,7 @@ Assertion.addMethod("unauthenticated", (message) ->
 )
 
 Assertion.addMethod("bad", (message) ->
-    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh"; token-types="bearer"'
+    expectedLink = '<' + tokenEndpoint + '>; rel="oauth2-token"; grant-types="password refresh_token"; token-types="bearer"'
     expectedWwwAuthenticate = 'Bearer realm="' + wwwAuthenticateRealm + '", error="invalid_request", ' +
                               'error_description="' + message + '"'
 

@@ -25,7 +25,7 @@ suite
     .get("/secret")
         .expect(401)
         .expect("should respond with WWW-Authenticate and Link headers", (err, res, body) ->
-            expectedLink = '</token>; rel="oauth2-token"; grant-types="password refresh"; token-types="bearer"'
+            expectedLink = '</token>; rel="oauth2-token"; grant-types="password refresh_token"; token-types="bearer"'
 
             res.headers.should.have.property("www-authenticate").that.equals('Bearer realm="Who goes there?"')
             res.headers.should.have.property("link").that.equals(expectedLink)
