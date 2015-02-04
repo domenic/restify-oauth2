@@ -2,14 +2,14 @@
     "name": "restify-oauth2",
     "description": "A simple OAuth 2 endpoint for Restify",
     "keywords": ["restify", "oauth", "oauth2", "rest", "authorization", "authentication", "api"],
-    "version": "4.0.1",
+    "version": "4.0.2",
     "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenic.me/)",
     "license": "WTFPL",
     "repository": {
         "type": "git",
-        "url": "git://github.com/gmaniac/restify-oauth2.git"
+        "url": "git://github.com/domenic/restify-oauth2.git"
     },
-    "bugs": "http://github.com/gmaniac/restify-oauth2/issues",
+    "bugs": "http://github.com/domenic/restify-oauth2/issues",
     "main": "lib/index.js",
     "scripts": {
         "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration && npm run test-cc-with-scopes-integration",
