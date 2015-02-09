@@ -94,8 +94,33 @@ beforeEach ->
         }
     }
 
+    optionsWithPublicClients = {
+        tokenEndpoint
+        wwwAuthenticateRealm
+        tokenExpirationTime
+        hooks: {
+            validateClient: "allow public clients"
+            @authenticateToken
+            @grantUserToken
+        }
+    }
+
+    optionsWithScopeAndPublicClients = {
+        tokenEndpoint
+        wwwAuthenticateRealm
+        tokenExpirationTime
+        hooks: {
+            validateClient: "allow public clients"
+            @authenticateToken
+            @grantUserToken
+            @grantScopes
+        }
+    }
+
     @doIt = => restifyOAuth2.ropc(@server, options)
     @doItWithScopes = => restifyOAuth2.ropc(@server, optionsWithScope)
+    @doItWithPublicClients = => restifyOAuth2.ropc(@server, optionsWithPublicClients)
+    @doItWithScopesAndPublicClient = => restifyOAuth2.ropc(@server, optionsWithScopeAndPublicClients)
 
 describe "Resource Owner Password Credentials flow", ->
     it "should set up the token endpoint", ->
@@ -345,17 +370,147 @@ describe "Resource Owner Password Credentials flow", ->
                             @grantUserToken.should.not.have.been.called
 
                 describe "without an authorization header", ->
-                    it "should send a 400 response with error_type=invalid_request", ->
-                        @doIt()
+                    describe "when public clients are disallowed", ->
+                        it "should send a 400 response with error_type=invalid_request", ->
+                            @doIt()
 
-                        @res.should.be.an.oauthError("BadRequest", "invalid_request",
-                                                     "Must include a basic access authentication header.")
+                            @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                                                         "Must include a basic access authentication header.")
 
-                    it "should not call the `validateClient` or `grantUserToken` hooks", ->
-                        @doIt()
+                        it "should not call the `validateClient` or `grantUserToken` hooks", ->
+                            @doIt()
 
-                        @validateClient.should.not.have.been.called
-                        @grantUserToken.should.not.have.been.called
+                            @validateClient.should.not.have.been.called
+                            @grantUserToken.should.not.have.been.called
+
+                    describe "when public clients are allowed", ->
+                        beforeEach ->
+                            baseDoIt = @doItWithPublicClients
+                            @doIt = =>
+                                baseDoIt()
+                                @postToTokenEndpoint()
+
+                        describe "and the request has a username field", ->
+                            beforeEach ->
+                                @username = "username123"
+                                @req.body.username = @username
+
+                            describe "and a password field", ->
+                                beforeEach ->
+                                    @password = "password456"
+                                    @req.body.password = @password
+
+                                it "should not validate the client", ->
+                                    @doIt()
+
+                                    @validateClient.should.not.have.been.called
+
+                                it "should use the username and password body fields to grant a token", ->
+                                    @doIt()
+
+                                    @grantUserToken.should.have.been.calledWith(
+                                        { @username, @password },
+                                        @req
+                                    )
+
+                                describe "when `grantUserToken` calls back with a token", ->
+                                    beforeEach ->
+                                        @token = "token123"
+                                        @grantUserToken.yields(null, @token)
+
+                                    describe "and a `grantScopes` hook is defined", ->
+                                        beforeEach ->
+                                            baseDoIt = @doItWithScopesAndPublicClient
+                                            @doIt = =>
+                                                baseDoIt()
+                                                @postToTokenEndpoint()
+                                            @requestedScopes = ["one", "two"]
+                                            @req.body.scope = @requestedScopes.join(" ")
+
+                                        it "should use only the resource-owner credentials to grant scopes", ->
+                                            @doIt()
+
+                                            @grantScopes.should.have.been.calledWith(
+                                                { @username, @password, @token },
+                                                @requestedScopes
+                                            )
+
+                                    describe "and a `grantScopes` hook is not defined", ->
+                                        beforeEach -> @grantScopes = undefined
+
+                                        it "should send a response with access_token, token_type, and expires_in " +
+                                           "set", ->
+                                            @doIt()
+
+                                            @res.send.should.have.been.calledWith(
+                                                access_token: @token,
+                                                token_type: "Bearer"
+                                                expires_in: tokenExpirationTime
+                                            )
+
+                                        it "should call `next`", ->
+                                            @doIt()
+
+                                            @tokenNext.should.have.been.calledWithExactly()
+
+                                describe "when `grantUserToken` calls back with `false`", ->
+                                    beforeEach -> @grantUserToken.yields(null, false)
+
+                                    it "should send a 401 response with error_type=invalid_grant", ->
+                                        @doIt()
+
+                                        @res.should.be.an.oauthError("Unauthorized", "invalid_grant",
+                                                                     "Username and password did not authenticate.")
+
+                                describe "when `grantUserToken` calls back with `null`", ->
+                                    beforeEach -> @grantUserToken.yields(null, null)
+
+                                    it "should send a 401 response with error_type=invalid_grant", ->
+                                        @doIt()
+
+                                        @res.should.be.an.oauthError("Unauthorized", "invalid_grant",
+                                                                     "Username and password did not authenticate.")
+
+                                describe "when `grantUserToken` calls back with an error", ->
+                                    beforeEach ->
+                                        @error = new Error("Bad things happened, internally.")
+                                        @grantUserToken.yields(@error)
+
+                                    it "should call `next` with that error", ->
+                                        @doIt()
+
+                                        @tokenNext.should.have.been.calledWithExactly(@error)
+
+                            describe "that has no password field", ->
+                                beforeEach -> @req.body.password = null
+
+                                it "should send a 400 response with error_type=invalid_request", ->
+                                    @doIt()
+
+                                    @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                                                                 "Must specify password field.")
+
+                                it "should not call the `validateClient` or `grantUserToken` hooks", ->
+                                    @doIt()
+
+                                    @validateClient.should.not.have.been.called
+                                    @grantUserToken.should.not.have.been.called
+
+                        describe "that has no username field", ->
+                            beforeEach -> @req.body.username = null
+
+                            it "should send a 400 response with error_type=invalid_request", ->
+                                @doIt()
+
+                                @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                                                             "Must specify username field.")
+
+                            it "should not call the `validateClient` or `grantUserToken` hooks", ->
+                                @doIt()
+
+                                @validateClient.should.not.have.been.called
+                                @grantUserToken.should.not.have.been.called
+
 
                 describe "with an authorization header that does not contain basic access credentials", ->
                     beforeEach ->
