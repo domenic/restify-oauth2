@@ -21,7 +21,8 @@ var RESOURCES = Object.freeze({
     INITIAL: "/",
     TOKEN: "/token",
     PUBLIC: "/public",
-    SECRET: "/secret"
+    SECRET: "/secret",
+    BASICAUTH: "/basicauth" //but requires some other basic auth
 });
 
 server.use(restify.authorizationParser());
@@ -76,6 +77,45 @@ server.get(RESOURCES.SECRET, function (req, res) {
 
     res.contentType = "application/hal+json";
     res.send(response);
+});
+
+/*
+    This is an endpoint that requires a valid client through
+    basic auth OR a valid oauth token (such as a resource
+    availible to a client or a verified user)
+ */
+server.get(RESOURCES.BASICAUTH, function (req, res) {
+    
+    var response;
+
+    if (!req.username) {
+
+        if (req.authorization.scheme === "Basic") {
+
+            hooks.validateClient(req.authorization.basic.username, req.authorization.basic.password, function (err, valid) {
+                if (valid) {
+                    response = {
+                        "message" : "valid client basic auth"
+                    };
+                } else {
+                    return res.sendUnauthorized();
+                }
+            });
+            
+        } else {
+            return res.sendUnauthorized();
+        }
+
+
+    } else {
+        response = {
+            "message": "valid oauth token"
+        };
+    }
+
+    res.contentType = "application/hal+json";
+    res.send(response);
+
 });
 
 server.listen(8080);
