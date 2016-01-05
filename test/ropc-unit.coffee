@@ -94,12 +94,13 @@ beforeEach ->
         }
     }
 
-    @doIt = => restifyOAuth2.ropc(@server, options)
+    @doItBase = => restifyOAuth2.ropc(@server, options)
+    @doIt = => @doItBase
     @doItWithScopes = => restifyOAuth2.ropc(@server, optionsWithScope)
 
 describe "Resource Owner Password Credentials flow", ->
     it "should set up the token endpoint", ->
-        @doIt()
+        @doItBase()
 
         @server.post.should.have.been.calledWith(tokenEndpoint)
 
@@ -109,7 +110,7 @@ describe "Resource Owner Password Credentials flow", ->
             @req.path = => tokenEndpoint
             @res.nextSpy = @tokenNext
 
-            baseDoIt = @doIt
+            baseDoIt = @doItBase
             @doIt = =>
                 baseDoIt()
                 @postToTokenEndpoint()
@@ -441,7 +442,7 @@ describe "Resource Owner Password Credentials flow", ->
                 @req.authorization = { scheme: "Bearer", credentials: @token }
 
             it "should pause the request and authenticate the token", ->
-                @doIt()
+                @doItBase()
 
                 @req.pause.should.have.been.called
                 @authenticateToken.should.have.been.calledWith(@token, @req)
@@ -450,7 +451,7 @@ describe "Resource Owner Password Credentials flow", ->
                 beforeEach -> @authenticateToken.yields(null, true)
 
                 it "should resume the request and call `next`", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @pluginNext.should.have.been.calledWithExactly()
@@ -459,7 +460,7 @@ describe "Resource Owner Password Credentials flow", ->
                 beforeEach -> @authenticateToken.yields(null, false)
 
                 it "should resume the request and send a 401 response, along with WWW-Authenticate and Link headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @res.should.be.unauthorized(
@@ -472,7 +473,7 @@ describe "Resource Owner Password Credentials flow", ->
                     @authenticateToken.yields(new restify.UnauthorizedError(@errorMessage))
 
                 it "should resume the request and send the error, along with WWW-Authenticate and Link headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @res.should.be.unauthorized(@errorMessage)
@@ -483,7 +484,7 @@ describe "Resource Owner Password Credentials flow", ->
                     @authenticateToken.yields(@error)
 
                 it "should resume the request and send the error, but no headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @pluginNext.should.have.been.calledWith(@error)
@@ -493,7 +494,7 @@ describe "Resource Owner Password Credentials flow", ->
             beforeEach -> @req.authorization = {}
 
             it "should remove `req.username`, and simply call `next`", ->
-                @doIt()
+                @doItBase()
 
                 should.not.exist(@req.username)
                 @pluginNext.should.have.been.calledWithExactly()
@@ -506,7 +507,7 @@ describe "Resource Owner Password Credentials flow", ->
                     basic: { username: "aaa", password: "bbb" }
 
             it "should send a 400 response with WWW-Authenticate and Link headers", ->
-                @doIt()
+                @doItBase()
 
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
@@ -517,7 +518,7 @@ describe "Resource Owner Password Credentials flow", ->
                     credentials: ""
 
             it "should send a 400 response with WWW-Authenticate and Link headers", ->
-                @doIt()
+                @doItBase()
 
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
@@ -525,7 +526,7 @@ describe "Resource Owner Password Credentials flow", ->
         beforeEach ->
             @req.path = => "/other-resource"
             @res.nextSpy = @pluginNext
-            @doIt()
+            @doItBase()
 
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthenticated()
@@ -549,7 +550,7 @@ describe "Resource Owner Password Credentials flow", ->
         beforeEach ->
             @req.path = => "/other-resource"
             @res.nextSpy = @pluginNext
-            @doIt()
+            @doItBase()
 
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthorized()

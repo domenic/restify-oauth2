@@ -11,8 +11,8 @@ var server = restify.createServer({
     name: "Example Restify-OAuth2 Resource Owner Password Credentials Server",
     version: require("../../package.json").version,
     formatters: {
-        "application/hal+json": function (req, res, body) {
-            return res.formatters["application/json"](req, res, body);
+        "application/hal+json": function (req, res, body, cb) {
+            return res.formatters["application/json"](req, res, body, cb);
         }
     }
 });
