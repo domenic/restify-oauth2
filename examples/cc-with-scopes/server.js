@@ -104,4 +104,9 @@ server.get(RESOURCES.SCOPED, function (req, res) {
     res.send(response);
 });
 
+server.post('/close', function(req, res){
+    res.send(200);
+    server.close();
+});
+
 server.listen(8080);

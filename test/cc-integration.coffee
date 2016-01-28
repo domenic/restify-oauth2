@@ -84,4 +84,8 @@ suite
     .get("/public")
         .expect(200)
     .next()
+    .discuss('test cleanup')
+        .post("/close")
+            .expect(200)
+                .next()
 .export(module)
