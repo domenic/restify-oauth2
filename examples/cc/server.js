@@ -11,8 +11,8 @@ var server = restify.createServer({
     name: "Example Restify-OAuth2 Client Credentials Server",
     version: require("../../package.json").version,
     formatters: {
-        "application/hal+json": function (req, res, body) {
-            return res.formatters["application/json"](req, res, body);
+        "application/hal+json": function (req, res, body, cb) {
+            return res.formatters["application/json"](req, res, body, cb);
         }
     }
 });
@@ -76,6 +76,11 @@ server.get(RESOURCES.SECRET, function (req, res) {
 
     res.contentType = "application/hal+json";
     res.send(response);
+});
+
+server.post('/close', function(req, res){
+    res.send(200);
+    server.close();
 });
 
 server.listen(8080);

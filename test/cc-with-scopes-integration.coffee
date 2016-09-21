@@ -145,4 +145,8 @@ suite
             .expect(200)
         .next()
     .undiscuss()
+    .discuss('test cleanup')
+        .post("/close")
+            .expect(200)
+                .next()
 .export(module)
