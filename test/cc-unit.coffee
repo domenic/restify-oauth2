@@ -91,12 +91,13 @@ beforeEach ->
         }
     }
 
-    @doIt = => restifyOAuth2.cc(@server, options)
+    @doItBase = => restifyOAuth2.cc(@server, options)
+    @doIt = => @doItBase
     @doItWithScopes = => restifyOAuth2.cc(@server, optionsWithScope)
 
 describe "Client Credentials flow", ->
     it "should set up the token endpoint", ->
-        @doIt()
+        @doItBase()
 
         @server.post.should.have.been.calledWith(tokenEndpoint)
 
@@ -106,7 +107,7 @@ describe "Client Credentials flow", ->
             @req.path = => tokenEndpoint
             @res.nextSpy = @tokenNext
 
-            baseDoIt = @doIt
+            baseDoIt = @doItBase
             @doIt = =>
                 baseDoIt()
                 @postToTokenEndpoint()
@@ -347,7 +348,7 @@ describe "Client Credentials flow", ->
                 @req.authorization = { scheme: "Bearer", credentials: @token }
 
             it "should pause the request and authenticate the token", ->
-                @doIt()
+                @doItBase()
 
                 @req.pause.should.have.been.called
                 @authenticateToken.should.have.been.calledWith(@token, @req)
@@ -356,7 +357,7 @@ describe "Client Credentials flow", ->
                 beforeEach -> @authenticateToken.yields(null, true)
 
                 it "should resume the request and call `next`", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @pluginNext.should.have.been.calledWithExactly()
@@ -365,7 +366,7 @@ describe "Client Credentials flow", ->
                 beforeEach -> @authenticateToken.yields(null, false)
 
                 it "should resume the request and send a 401 response, along with WWW-Authenticate and Link headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @res.should.be.unauthorized(
@@ -378,7 +379,7 @@ describe "Client Credentials flow", ->
                     @authenticateToken.yields(new restify.UnauthorizedError(@errorMessage))
 
                 it "should resume the request and send the error, along with WWW-Authenticate and Link headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @res.should.be.unauthorized(@errorMessage)
@@ -389,7 +390,7 @@ describe "Client Credentials flow", ->
                     @authenticateToken.yields(@error)
 
                 it "should resume the request and send the error, but no headers", ->
-                    @doIt()
+                    @doItBase()
 
                     @req.resume.should.have.been.called
                     @pluginNext.should.have.been.calledWith(@error)
@@ -399,7 +400,7 @@ describe "Client Credentials flow", ->
             beforeEach -> @req.authorization = {}
 
             it "should not set `req.clientId`, and simply call `next`", ->
-                @doIt()
+                @doItBase()
 
                 should.not.exist(@req.clientId)
                 @pluginNext.should.have.been.calledWithExactly()
@@ -412,7 +413,7 @@ describe "Client Credentials flow", ->
                     basic: { username: "aaa", password: "bbb" }
 
             it "should send a 400 response with WWW-Authenticate and Link headers", ->
-                @doIt()
+                @doItBase()
 
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
@@ -423,7 +424,7 @@ describe "Client Credentials flow", ->
                     credentials: ""
 
             it "should send a 400 response with WWW-Authenticate and Link headers", ->
-                @doIt()
+                @doItBase()
 
                 @res.should.be.bad("Bearer token required. Follow the oauth2-token link to get one!")
 
@@ -431,7 +432,7 @@ describe "Client Credentials flow", ->
         beforeEach ->
             @req.path = => "/other-resource"
             @res.nextSpy = @pluginNext
-            @doIt()
+            @doItBase()
 
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthenticated()
@@ -455,7 +456,7 @@ describe "Client Credentials flow", ->
         beforeEach ->
             @req.path = => "/other-resource"
             @res.nextSpy = @pluginNext
-            @doIt()
+            @doItBase()
 
         describe "with no arguments", ->
             beforeEach -> @res.sendUnauthorized()

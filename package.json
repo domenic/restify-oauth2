@@ -10,7 +10,7 @@
     "authentication",
     "api"
   ],
-  "version": "4.0.3",
+  "version": "4.0.4",
   "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenic.me/)",
   "license": "WTFPL",
   "repository": {
@@ -21,8 +21,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration && npm run test-cc-with-scopes-integration",
-    "test-ropc-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script",
-    "test-cc-unit": "mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script",
+    "test-ropc-unit": "mocha test/ropc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
+    "test-cc-unit": "mocha test/cc-unit.coffee --reporter spec --compilers coffee:coffee-script/register",
     "test-ropc-integration": "vows test/ropc-integration.coffee --spec",
     "test-cc-integration": "vows test/cc-integration.coffee --spec",
     "test-cc-with-scopes-integration": "vows test/cc-with-scopes-integration.coffee --spec",
@@ -32,17 +32,17 @@
     "underscore": "1.x"
   },
   "peerDependencies": {
-    "restify": ">3.x"
+    "restify": "4.x"
   },
   "devDependencies": {
     "api-easy": "^0.4.0",
-    "chai": "^1.10.0",
-    "coffee-script": "^1.6.3",
-    "jshint": "^2.4.4",
-    "mocha": "^1.17.1",
-    "restify": "^3.0.2",
-    "sinon": "^1.14.1",
-    "sinon-chai": "^2.7.0",
+    "chai": "^3.2.0",
+    "coffee-script": "^1.9.3",
+    "jshint": "^2.8.0",
+    "mocha": "^2.2.5",
+    "restify": "^4.0",
+    "sinon": "^1.16.1",
+    "sinon-chai": "^2.8.0",
     "vows": "^0.8.1"
   }
 }
