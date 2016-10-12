@@ -140,6 +140,9 @@ The `hooks` hash is the only required option, but the following are also availab
 * `tokenExpirationTime`: the value returned for the `expires_in` component of the response from the token endpoint.
   Note that this is *only* the value reported; you are responsible for keeping track of token expiration yourself and
   calling back with `false` from `authenticateToken` when the token expires. Defaults to `Infinity`.
+* `allowPublicClients`: allow requests to the `tokenEndpoint` that do not have client credentials. This option only
+  applies to ROPC flows. OAuth2 disallows use of public clients for the CC flow. The `validateClient` hook will still 
+  be called for all requests, but parameters may be `null`. Defaults to `false`.
 
 ## What Does That Look Like?
 
