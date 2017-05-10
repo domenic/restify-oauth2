@@ -1,5 +1,5 @@
 {
-  "name": "restify-oauth2",
+  "name": "nqm-restify-oauth",
   "description": "A simple OAuth 2 endpoint for Restify",
   "keywords": [
     "restify",
@@ -10,14 +10,14 @@
     "authentication",
     "api"
   ],
-  "version": "4.0.4",
+  "version": "0.1.1",
   "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenic.me/)",
   "license": "WTFPL",
   "repository": {
     "type": "git",
-    "url": "git://github.com/domenic/restify-oauth2.git"
+    "url": "git://github.com/nqminds/nqm-restify-oauth.git"
   },
-  "bugs": "http://github.com/domenic/restify-oauth2/issues",
+  "bugs": "http://github.com/nqminds/nqm-restify-oauth/issues",
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run test-ropc-unit && npm run test-cc-unit && npm run test-ropc-integration && npm run test-cc-integration && npm run test-cc-with-scopes-integration",
