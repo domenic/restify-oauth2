@@ -32,7 +32,8 @@
     "underscore": "1.x"
   },
   "peerDependencies": {
-    "restify": "4.x"
+    "restify": "4.x",
+    "restify-errors": "4.x"
   },
   "devDependencies": {
     "api-easy": "^0.4.0",
