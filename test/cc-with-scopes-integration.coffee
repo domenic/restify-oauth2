@@ -84,8 +84,8 @@ suite
             .setHeader("Content-Type", "application/json")
             .post({ grant_type: "client_credentials" })
                 .expect(401)
-                .expect("should respond with error: invalid_client", (err, res, body) ->
-                    JSON.parse(body).should.have.property("error", "invalid_client")
+                .expect("should respond with error: InvalidClient", (err, res, body) ->
+                    JSON.parse(body).should.have.property("code", "InvalidClient")
                 )
         .undiscuss()
     .unpath().next()

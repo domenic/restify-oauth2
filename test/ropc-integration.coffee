@@ -65,8 +65,8 @@ suite
             .discuss("but invalid user credentials")
                 .post({ grant_type: "password", username: "blargh", password: "asdf" })
                     .expect(401)
-                    .expect("should respond with error: invalid_grant", (err, res, body) ->
-                        JSON.parse(body).should.have.property("error", "invalid_grant")
+                    .expect("should respond with error: InvalidGrant", (err, res, body) ->
+                        JSON.parse(body).should.have.property("code", "InvalidGrant")
                     )
             .undiscuss()
         .undiscuss()
@@ -75,8 +75,8 @@ suite
             .setHeader("Content-Type", "application/json")
             .post({ grant_type: "password", username, password })
                 .expect(401)
-                .expect("should respond with error: invalid_client", (err, res, body) ->
-                    JSON.parse(body).should.have.property("error", "invalid_client")
+                .expect("should respond with error: InvalidClient", (err, res, body) ->
+                    JSON.parse(body).should.have.property("code", "InvalidClient")
                 )
         .undiscuss()
     .unpath().next()
