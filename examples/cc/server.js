@@ -24,8 +24,8 @@ var RESOURCES = Object.freeze({
     SECRET: "/secret"
 });
 
-server.use(restify.authorizationParser());
-server.use(restify.bodyParser({ mapParams: false }));
+server.use(restify.plugins.authorizationParser());
+server.use(restify.plugins.bodyParser({ mapParams: false }));
 restifyOAuth2.cc(server, { tokenEndpoint: RESOURCES.TOKEN, hooks: hooks });
 
 

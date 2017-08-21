@@ -5,6 +5,7 @@ sinon = require("sinon")
 should = require("chai").should()
 Assertion = require("chai").Assertion
 restify = require("restify")
+errs = require("restify-errors")
 restifyOAuth2 = require("..")
 
 tokenEndpoint = "/token-uri"
@@ -23,7 +24,7 @@ Assertion.addMethod("unauthorized", (message, options) ->
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
     spyToTest.should.have.been.calledOnce
-    spyToTest.should.have.been.calledWith(sinon.match.instanceOf(restify.UnauthorizedError))
+    spyToTest.should.have.been.calledWith(sinon.match.instanceOf(errs.UnauthorizedError))
     spyToTest.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
@@ -32,7 +33,7 @@ Assertion.addMethod("unauthenticated", (message) ->
 
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
     @_obj.send.should.have.been.calledOnce
-    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(restify.ForbiddenError))
+    @_obj.send.should.have.been.calledWith(sinon.match.instanceOf(errs.ForbiddenError))
     @_obj.send.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
@@ -44,16 +45,14 @@ Assertion.addMethod("bad", (message) ->
     @_obj.header.should.have.been.calledWith("WWW-Authenticate", expectedWwwAuthenticate)
     @_obj.header.should.have.been.calledWith("Link", expectedLink)
     @_obj.nextSpy.should.have.been.calledOnce
-    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(restify.BadRequestError))
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(errs.BadRequestError))
     @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("message", sinon.match(message)))
 )
 
-Assertion.addMethod("oauthError", (errorClass, errorType, errorDescription) ->
-    desiredBody = { error: errorType, error_description: errorDescription }
+Assertion.addMethod("oauthError", (errorClass, errorDescription) ->
     @_obj.nextSpy.should.have.been.calledOnce
-    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(restify[errorClass + "Error"]))
+    @_obj.nextSpy.should.have.been.calledWith(sinon.match.instanceOf(errs[errorClass + "Error"]))
     @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("message", errorDescription))
-    @_obj.nextSpy.should.have.been.calledWith(sinon.match.has("body", desiredBody))
 )
 
 beforeEach ->
@@ -200,7 +199,7 @@ describe "Client Credentials flow", ->
 
                                     message = "The requested scopes are invalid, unknown, or exceed the set of " +
                                               "scopes appropriate for these credentials."
-                                    @res.should.be.an.oauthError("BadRequest", "invalid_scope", message)
+                                    @res.should.be.an.oauthError("InvalidScope", message)
 
                             describe "when `grantScopes` calls back with an error", ->
                                 beforeEach ->
@@ -235,7 +234,7 @@ describe "Client Credentials flow", ->
                         it "should send a 401 response with error_type=invalid_client", ->
                             @doIt()
 
-                            @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                            @res.should.be.an.oauthError("InvalidClient",
                                                          "Client ID and secret did not authenticate.")
 
                     describe "when `grantClientToken` calls back with `null`", ->
@@ -244,7 +243,7 @@ describe "Client Credentials flow", ->
                         it "should send a 401 response with error_type=invalid_client", ->
                             @doIt()
 
-                            @res.should.be.an.oauthError("Unauthorized", "invalid_client",
+                            @res.should.be.an.oauthError("InvalidClient",
                                                          "Client ID and secret did not authenticate.")
 
                     describe "when `grantClientToken` calls back with an error", ->
@@ -261,7 +260,7 @@ describe "Client Credentials flow", ->
                     it "should send a 400 response with error_type=invalid_request", ->
                         @doIt()
 
-                        @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                        @res.should.be.an.oauthError("InvalidRequest",
                                                      "Must include a basic access authentication header.")
 
                     it "should not call the `grantClientToken` hook", ->
@@ -278,7 +277,7 @@ describe "Client Credentials flow", ->
                     it "should send a 400 response with error_type=invalid_request", ->
                         @doIt()
 
-                        @res.should.be.an.oauthError("BadRequest", "invalid_request",
+                        @res.should.be.an.oauthError("InvalidRequest",
                                                      "Must include a basic access authentication header.")
 
                     it "should not call the `grantClientToken` hook", ->
@@ -292,7 +291,7 @@ describe "Client Credentials flow", ->
                 it "should send a 400 response with error_type=unsupported_grant_type", ->
                     @doIt()
 
-                    @res.should.be.an.oauthError("BadRequest", "unsupported_grant_type",
+                    @res.should.be.an.oauthError("UnsupportedGrantType",
                                                  "Only grant_type=client_credentials is supported.")
 
                 it "should not call the `grantClientToken` hook", ->
@@ -304,7 +303,7 @@ describe "Client Credentials flow", ->
                 it "should send a 400 response with error_type=invalid_request", ->
                     @doIt()
 
-                    @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must specify grant_type field.")
+                    @res.should.be.an.oauthError("InvalidRequest", "Must specify grant_type field.")
 
                 it "should not call the `grantClientToken` hook", ->
                     @doIt()
@@ -317,7 +316,7 @@ describe "Client Credentials flow", ->
             it "should send a 400 response with error_type=invalid_request", ->
                 @doIt()
 
-                @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
+                @res.should.be.an.oauthError("InvalidRequest", "Must supply a body.")
 
             it "should not call the `grantClientToken` hook", ->
                 @doIt()
@@ -330,7 +329,7 @@ describe "Client Credentials flow", ->
             it "should send a 400 response with error_type=invalid_request", ->
                 @doIt()
 
-                @res.should.be.an.oauthError("BadRequest", "invalid_request", "Must supply a body.")
+                @res.should.be.an.oauthError("InvalidRequest", "Must supply a body.")
 
             it "should not call the `grantClientToken` hook", ->
                 @doIt()
@@ -376,7 +375,7 @@ describe "Client Credentials flow", ->
             describe "when the `authenticateToken` calls back with a 401 error", ->
                 beforeEach ->
                     @errorMessage = "The authentication failed for some reason."
-                    @authenticateToken.yields(new restify.UnauthorizedError(@errorMessage))
+                    @authenticateToken.yields(new errs.UnauthorizedError(@errorMessage))
 
                 it "should resume the request and send the error, along with WWW-Authenticate and Link headers", ->
                     @doItBase()
@@ -386,7 +385,7 @@ describe "Client Credentials flow", ->
 
             describe "when the `authenticateToken` calls back with a non-401 error", ->
                 beforeEach ->
-                    @error = new restify.ForbiddenError("The authentication succeeded but this resource is forbidden.")
+                    @error = new errs.ForbiddenError("The authentication succeeded but this resource is forbidden.")
                     @authenticateToken.yields(@error)
 
                 it "should resume the request and send the error, but no headers", ->
