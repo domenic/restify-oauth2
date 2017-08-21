@@ -34,8 +34,8 @@ var restify = require("restify");
 var restifyOAuth2 = require("restify-oauth2");
 
 var server = restify.createServer({ name: "My cool server", version: "1.0.0" });
-server.use(restify.authorizationParser());
-server.use(restify.bodyParser({ mapParams: false }));
+server.use(restify.plugins.authorizationParser());
+server.use(restify.plugins.bodyParser({ mapParams: false }));
 
 restifyOAuth2.cc(server, options);
 // or
